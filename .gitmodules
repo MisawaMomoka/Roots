@@ -1,0 +1,3 @@
+[submodule "ig-harness"]
+	path = ig-harness
+	url = https://github.com/Shudesu/ig-harness-oss.git

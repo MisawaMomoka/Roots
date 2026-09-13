@@ -1,0 +1,4 @@
+# IG Harness セットアップで生成される秘密情報（絶対にコミットしない）
+ig-harness-setup/.env
+ig-harness-setup/.deployed.env
+.mcp.json

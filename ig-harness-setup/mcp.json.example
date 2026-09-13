@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "ig-harness": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/Roots/ig-harness/packages/mcp-server/dist/index.js"],
+      "env": {
+        "IG_HARNESS_API_URL": "https://ig-harness-xxxxxxxx.YOUR-SUBDOMAIN.workers.dev",
+        "IG_HARNESS_API_KEY": "deploy.sh が生成した API_KEY（.deployed.env 参照）"
+      }
+    }
+  }
+}
