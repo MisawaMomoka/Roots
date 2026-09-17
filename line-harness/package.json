@@ -1,0 +1,13 @@
+{
+  "name": "roots-line-harness-funnel",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "apply": "node scripts/apply.mjs",
+    "apply:booking": "node scripts/apply.mjs --booking",
+    "sync": "node scripts/sync-bookings.mjs",
+    "sync:dry": "node scripts/sync-bookings.mjs --dry-run --verbose",
+    "test": "node --test \"scripts/test/**/*.test.mjs\""
+  }
+}

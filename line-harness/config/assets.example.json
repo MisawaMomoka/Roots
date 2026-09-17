@@ -1,0 +1,21 @@
+{
+  "$comment": "assets.json にコピーして使う（.gitignore 済み）。mp4Url が空なら linkUrl でテキスト＋リンクに切り替わる。",
+
+  "bookingVideo": {
+    "mp4Url": "https://videos.example.com/roots/booking-thanks.mp4",
+    "previewUrl": "https://videos.example.com/roots/booking-thanks.jpg",
+    "aspectRatio": "9:16",
+    "linkUrl": ""
+  },
+  "prevdayVideo": {
+    "mp4Url": "https://videos.example.com/roots/prevday-education.mp4",
+    "previewUrl": "https://videos.example.com/roots/prevday-education.jpg",
+    "aspectRatio": "9:16",
+    "linkUrl": ""
+  },
+
+  "staffMeetingUrls": {
+    "担当者A": "https://zoom.us/j/0000000000?pwd=xxxx"
+  },
+  "defaultMeetingUrl": "https://zoom.us/j/0000000000?pwd=xxxx"
+}

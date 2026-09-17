@@ -1,0 +1,96 @@
+{
+  "$comment": "診断会ファネルの定義。apply.mjs がこのファイルを L Harness に反映し、sync-bookings.mjs が予約に応じてシナリオ登録する。",
+
+  "autoApprove": true,
+  "thanksMaxAgeMinutes": 180,
+  "prevDay": { "time": "19:00", "cutoffTime": "22:00" },
+  "sameDay": { "minutesBefore": 120 },
+  "lookaheadDays": 60,
+
+  "tags": [
+    { "key": "applied",   "name": "診断会_予約申込", "color": "#F59E0B" },
+    { "key": "confirmed", "name": "診断会_予約確定", "color": "#10B981" }
+  ],
+
+  "scenarios": {
+    "welcome": {
+      "name": "診断会_友だち追加",
+      "description": "友だち追加直後。予約ページへの案内（文面はドラフト、要確認）",
+      "triggerType": "friend_add",
+      "deliveryMode": "relative",
+      "steps": [
+        { "type": "text", "file": "welcome-01.txt", "delayMinutes": 0 }
+      ]
+    },
+    "thanks": {
+      "name": "診断会_予約直後",
+      "description": "予約確定の直後。お礼→動画（褒め）→当日までの過ごし方。教育は入れない",
+      "triggerType": "manual",
+      "deliveryMode": "relative",
+      "steps": [
+        { "type": "text",  "file": "booking-01.txt", "delayMinutes": 0 },
+        { "type": "video", "asset": "bookingVideo", "delayMinutes": 0,
+          "title": "ゆうなりから、予約してくださったあなたへ",
+          "caption": "2分34秒・音が出ます🔈",
+          "fallbackFile": "booking-02-link.txt" },
+        { "type": "text",  "file": "booking-03.txt", "delayMinutes": 1 }
+      ]
+    },
+    "reschedule": {
+      "name": "診断会_日程変更",
+      "description": "2回目以降の予約確定（日程変更）。動画は送らず確定文だけ",
+      "triggerType": "manual",
+      "deliveryMode": "relative",
+      "steps": [
+        { "type": "text", "file": "reschedule-01.txt", "delayMinutes": 0 }
+      ]
+    },
+    "prevday": {
+      "name": "診断会_前日19時",
+      "description": "診断会の前日 19:00。前振り→動画（教育）→宿題の念押し",
+      "triggerType": "manual",
+      "deliveryMode": "absolute_time",
+      "steps": [
+        { "type": "text",  "file": "prevday-01.txt", "offsetDays": 0, "deliveryTime": "19:00" },
+        { "type": "video", "asset": "prevdayVideo", "offsetDays": 0, "deliveryTime": "19:00",
+          "title": "明日の診断会の前に、ゆうなりから",
+          "caption": "3分・音が出ます🔈",
+          "fallbackFile": "prevday-02-link.txt" },
+        { "type": "text",  "file": "prevday-03.txt", "offsetDays": 0, "deliveryTime": "19:01" }
+      ]
+    },
+    "sameday": {
+      "name": "診断会_当日2時間前",
+      "description": "診断会の開始2時間前。Zoom URL・持ち物・担当者名",
+      "triggerType": "manual",
+      "deliveryMode": "relative",
+      "steps": [
+        { "type": "text", "file": "sameday-01.txt", "delayMinutes": 0 }
+      ]
+    }
+  },
+
+  "booking": {
+    "menu": {
+      "name": "個別体質診断会（Zoom・60分）",
+      "category_label": "診断会",
+      "description": "体質診断の結果をもとに、あなたに合うやり方を一緒に決める60分（Zoom・マンツーマン）",
+      "duration_minutes": 60,
+      "buffer_after_minutes": 0,
+      "base_price": 0,
+      "sort_order": 0,
+      "auto_tag": "applied"
+    },
+    "staff": [
+      { "name": "担当者A", "display_name": "担当者A", "role": "体質診断カウンセラー" }
+    ],
+    "availabilityRules": [
+      { "weekday": 1, "start_time": "10:00", "end_time": "21:00" },
+      { "weekday": 2, "start_time": "10:00", "end_time": "21:00" },
+      { "weekday": 3, "start_time": "10:00", "end_time": "21:00" },
+      { "weekday": 4, "start_time": "10:00", "end_time": "21:00" },
+      { "weekday": 5, "start_time": "10:00", "end_time": "21:00" },
+      { "weekday": 6, "start_time": "10:00", "end_time": "18:00" }
+    ]
+  }
+}

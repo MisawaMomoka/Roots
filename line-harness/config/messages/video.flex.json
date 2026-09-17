@@ -1,0 +1,26 @@
+{
+  "type": "bubble",
+  "size": "mega",
+  "hero": {
+    "type": "video",
+    "url": "__VIDEO_URL__",
+    "previewUrl": "__PREVIEW_URL__",
+    "aspectRatio": "__ASPECT_RATIO__",
+    "altContent": {
+      "type": "image",
+      "url": "__PREVIEW_URL__",
+      "size": "full",
+      "aspectRatio": "__ASPECT_RATIO__",
+      "aspectMode": "cover"
+    }
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+      { "type": "text", "text": "__TITLE__", "weight": "bold", "size": "md", "wrap": true },
+      { "type": "text", "text": "__CAPTION__", "size": "sm", "color": "#888888", "wrap": true }
+    ]
+  }
+}
