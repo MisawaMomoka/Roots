@@ -12,8 +12,8 @@ LINE公式アカウントは作成済みの前提。LINE Developers Console で 
 
 ### 1-1. Messaging API チャネル
 
-1. https://developers.line.biz/console/ → プロバイダーを作る（社名でよい）
-2. 「Messaging API」チャネルを作成し、公式アカウントと紐づける
+1. https://manager.line.biz/ → 公式アカウントを選ぶ → 右上の歯車（設定）→ 「Messaging API」→ プロバイダーを作る（社名でよい）
+2. これで Messaging API チャネルが公式アカウントに紐づいた状態で作られる（LINE Developers Console にも同じチャネルが出る）
 3. 控える値
 
 | 項目 | 場所 |
@@ -28,7 +28,7 @@ Messaging API だけだと予約ページ（LIFF）が動かず、PCから友だ
 
 1. 同じプロバイダーに「LINE Login」チャネルを作成
 2. 「LIFF」タブ → LIFFアプリを追加
-   - エンドポイントURL：**あとで** Worker のURLに差し替える（仮で `https://example.com` でよい）
+   - エンドポイントURL：**あとで** `https://<worker>?liffId=<LIFF ID>` に差し替える（仮で `https://example.com` でよい）
    - Scope：`profile` `openid`
    - サイズ：Full
 3. 「LINEログイン設定」タブ
@@ -41,67 +41,162 @@ Messaging API だけだと予約ページ（LIFF）が動かず、PCから友だ
 
 https://manager.line.biz/ で以下を **オフ** にする（L Harness 側で制御するため）。
 
-- 応答設定 → 「応答メッセージ」オフ、「あいさつメッセージ」オフ、「Webhook」オン
-- チャット は オン のまま（管理画面の1:1返信と共存できる）
+- 応答設定 → 「応答メッセージ」オフ、「あいさつメッセージ」オフ、「チャット」オフ、「Webhook」オン
+- 1:1 の返信は L Harness の管理画面（チャット）から行う。詳細は §2-5
 
 ---
 
-## §2 Cloudflare にデプロイ（30分）
+## §2 Cloudflare にデプロイ（30分〜1時間）
+
+### まず、ここで何をするのかを1行で
+
+**L Harness の本体（プログラムとデータベース）を、Cloudflare というサーバー会社の無料枠に置いて動かす**作業。
+「Cloudflare にデプロイ」＝「Cloudflare 上に自分専用の L Harness を1つ立てる」という意味。
+
+`npx create-line-harness` という1本のコマンドが、質問に答えていくだけで全部やってくれる。
+自分でサーバーを触ったり設定ファイルを書いたりはしない。
+
+### 2-0. 事前に用意するもの
+
+| 用意するもの | 説明 | まだ無ければ |
+|---|---|---|
+| **Cloudflare アカウント** | サーバー会社のアカウント。無料 | https://dash.cloudflare.com/sign-up でメールアドレス登録 |
+| **クレジットカード**（Cloudflare に登録） | 画像置き場（R2）を有効にするのに必要。10GB まで無料なので課金はされない | Cloudflare にログイン → Storage & Databases → R2 → Overview → 「Purchase R2 Plan」でカード登録 |
+| **Node.js 22 以上** | パソコンでコマンドを動かすための土台 | https://nodejs.org/ から「LTS」をインストール |
+| **ターミナル** | コマンドを打つ黒い画面 | Mac は「ターミナル」アプリ、Windows は「PowerShell」 |
+| §1 で控えた5つの値 | Messaging API のチャネルID・シークレット・アクセストークン、LINE Login のチャネルID、LIFF ID | §1 に戻る |
+
+確認コマンド（ターミナルに貼って Enter）：
 
 ```bash
-# Node 22+ / pnpm 9+ を確認
-node -v && pnpm -v
+node -v
+```
 
-# セットアップCLI。Cloudflare ログイン → D1作成 → Worker/管理画面デプロイ →
-# LINE認証情報の登録 → LIFF自動作成 → 管理者ユーザー作成 まで対話式で進む
+`v22.x.x` のように出れば OK。`command not found` なら Node.js が入っていない。
+
+### 2-1. コマンドを打つ場所に移動する
+
+ターミナルで、このリポジトリの `line-harness` フォルダに移動する。
+理由：完了時に Claude Code 用の `.mcp.json` が「コマンドを打った場所」に自動で作られるため。ここに置けばそのまま §6 が終わる。
+
+```bash
+cd /path/to/Roots/line-harness      # 自分のパソコンでの場所に置き換える
+```
+
+Mac なら Finder で `line-harness` フォルダを右クリック → 「フォルダに新規ターミナル」でも同じ。
+
+### 2-2. セットアップコマンドを実行する
+
+```bash
 npx create-line-harness@latest
 ```
 
-聞かれること：
+初回は `Ok to proceed? (y)` と聞かれるので `y` + Enter。そこから対話が始まる。
+**途中でやめても、もう一度同じコマンドを打てば続きから再開できる**（進み具合は `~/.line-harness/.line-harness-setup.json` に保存される）。
 
-| 質問 | この案件での答え |
-|---|---|
-| プロジェクト名 | `roots-line` のような英小文字（Worker名・管理画面URLになる） |
-| Messaging API チャネルシークレット／トークン | §1-1 の値 |
-| LINE Login チャネルID／シークレット | §1-2 の値 |
-| LIFF ID | §1-2 の値 |
-| 管理画面 Owner のメール／パスワード | 運用者のもの |
+### 2-3. 質問に答えていく（出てくる順）
 
-完了すると次の3つが手に入る。**`.env` に控える**（`.env.example` をコピー）。
-
-| 値 | 例 | 使い道 |
+| 順 | 画面に出ること | 何をするか |
 |---|---|---|
-| Worker URL | `https://roots-line.<sub>.workers.dev` | API・Webhook・LIFFエンドポイント |
-| 管理画面 URL | `https://roots-line-admin.pages.dev` | 日常運用 |
-| API Key | `sk-...` | スクリプト・MCP・SDK |
+| 1 | 環境チェック中… | 何もしない。Node.js の版を確認しているだけ |
+| 2 | **Cloudflare にログインが必要です**。ブラウザが開きます | ブラウザで Cloudflare にログインし、「Allow」を押す。ターミナルに戻ると「ログイン完了」と出る |
+| 3 | 使用する Cloudflare アカウントを選択（複数ある人だけ） | 矢印キーで選んで Enter |
+| 4 | **Step 1. Cloudflare 設定**：R2 Object Storage の有効化 | 2-0 でカード登録が済んでいれば、そのまま Enter |
+| 5 | **プロジェクト名**（Worker と D1 の名前に使われます） | `roots-line` のように英小文字とハイフンだけで入力。URL の一部になる |
+| 6 | **Step 2-1. Channel ID（数字）** | Messaging API チャネルの「チャネルID」を貼る |
+| 7 | **Step 2-2. チャネルシークレット** | Messaging API チャネルの「チャネルシークレット」を貼る（画面には表示されない） |
+| 8 | **Step 2-3. チャネルアクセストークン（長期）** | Messaging API 設定タブで「発行」したトークンを貼る |
+| 9 | **Step 3-1. チャネル ID（LINE Login）** | LINE Login チャネルの「チャネルID」を貼る（Messaging API とは別の番号） |
+| 10 | **Step 3-2. LIFF ID** | `2009554425-4IMBmLQ9` のような「数字-英字」の形。LIFF アプリが「公開済み」になっているか確認 |
+| 11 | workers.dev サブドメイン名（初めて Cloudflare を使う人だけ） | `roots` のように短い英小文字。URL が `https://roots-line.roots.workers.dev` のようになる |
+| 12 | D1 作成中… R2 作成中… Worker デプロイ中… Admin UI デプロイ中… | 5〜10分待つ。wrangler の英語ログが流れるが読まなくてよい |
 
-### 2-1. デプロイ後に LINE Developers へ戻って設定
+### 2-4. 完了画面で控えるもの
 
-1. Messaging API チャネル → Webhook URL：`https://<worker>/webhook` → Verify → 「Webhookの利用」オン
-2. LINE Login チャネル → LIFF のエンドポイントURLを `https://<worker>` に変更
-3. LINE Login チャネル → Callback URL に `https://<worker>/auth/callback` を登録
+最後に「セットアップ完了！」という枠が出る。**この枠の内容をすべてメモ帳にコピーしておく**（API Key は二度と表示されない）。
 
-### 2-2. 動作確認
+| 枠に出る項目 | この案件での使い道 | 書き写す先 |
+|---|---|---|
+| ② Webhook URL `https://<worker>/webhook` | LINE 側に設定する（2-5） | — |
+| ③ Callback URL `https://<worker>/auth/callback` | LINE Login チャネルに設定する（2-5） | — |
+| ④ LIFF エンドポイント URL `https://<worker>?liffId=…` | LINE Login チャネルの LIFF に設定する（2-5）。**`?liffId=` まで含めて貼る** | — |
+| ⑤ 友だち追加 URL `https://<worker>/auth/line?ref=setup` | VSL やLPからの友だち追加はこの形の URL を使う（`ref=vsl` などに変えると流入元が記録される） | LP の担当者へ |
+| ⑥ 管理画面 URL `https://<project>-admin.pages.dev` | 日常運用の画面。ログイン時に API Key を入力する | `.env` ではなくブックマーク |
+| API Key | スクリプト・MCP・管理画面ログインの合言葉 | `.env` の `LINE_HARNESS_API_KEY` |
+| Worker URL（上の URL の `https://…workers.dev` 部分） | API の住所 | `.env` の `LINE_HARNESS_API_URL` |
+
+`.env` の作り方：
 
 ```bash
-# .env を読み込んで疎通確認
-set -a; source .env; set +a
-curl -s -H "Authorization: Bearer $LINE_HARNESS_API_KEY" "$LINE_HARNESS_API_URL/api/friends/count"
-# → {"success":true,"data":{"count":0}}
+cp .env.example .env
 ```
 
-自分のスマホで公式アカウントを友だち追加し、管理画面「友だち」に自分が出てくればOK。
+をこのフォルダで実行し、テキストエディタで `.env` を開いて上の2つを書き込む。`.env` は git に入らない設定になっている。
 
-### 2-3. アカウントIDを控える
+同じフォルダに `.mcp.json` も自動で作られている（Claude Code 用。§6 参照）。中に API Key が入っているので、人に送らない。
 
-L Harness はマルチアカウント前提なので、予約管理の API は `account_id` が必要。
+### 2-5. LINE 側に URL を登録する（完了画面の ①〜④）
+
+完了画面の指示どおりに、LINE 側の設定を4か所変える。
+
+**① LINE Official Account Manager（https://manager.line.biz/）→ 設定 → 応答設定**
+
+| 項目 | 設定 |
+|---|---|
+| チャット | オフ（1:1 の返信は L Harness の管理画面から行う） |
+| あいさつメッセージ | オフ（シナリオ `診断会_友だち追加` が代わりに送る） |
+| Webhook | **オン** |
+| 応答メッセージ | オフ |
+
+**② LINE Developers Console → Messaging API チャネル → 「Messaging API設定」タブ**
+
+- Webhook URL に `https://<worker>/webhook` を貼って「更新」→「検証」で成功を確認 → 「Webhookの利用」をオン
+
+**③ LINE Developers Console → LINE Login チャネル**
+
+- 「リンクされたLINE公式アカウント」で公式アカウントを選択、友だち追加オプションを **On (aggressive)**
+- 「LINEログイン設定」タブ → 「ウェブアプリでLINEログインを利用する」を ON → Callback URL に `https://<worker>/auth/callback`
+
+**④ LINE Developers Console → LINE Login チャネル → 「LIFF」タブ**
+
+- 作ってあった LIFF アプリの「エンドポイントURL」を、完了画面④の `https://<worker>?liffId=<LIFF ID>` に変更（`?liffId=` を省くと予約ページが開かない）
+
+### 2-6. 動いているか確認する
+
+1. スマホで公式アカウントを友だち追加する（完了画面⑤の URL を自分の LINE に送って開くと確実）
+2. 管理画面 URL をブラウザで開き、API Key でログイン → 「友だち」に自分が出ていれば **Webhook が通っている**
+3. ターミナルで API の疎通確認：
+
+```bash
+set -a; source .env; set +a
+curl -s -H "Authorization: Bearer $LINE_HARNESS_API_KEY" "$LINE_HARNESS_API_URL/api/friends/count"
+# → {"success":true,"data":{"count":1}}
+```
+
+### 2-7. アカウントIDを控える
+
+L Harness は複数の公式アカウントを1つの管理画面で扱える設計なので、予約管理の API は「どのアカウントか」を毎回指定する。
+自動生成された `.mcp.json` の `LINE_HARNESS_ACCOUNT_ID` に入っていればそれをコピー。空なら次のコマンドで取れる。
 
 ```bash
 curl -s -H "Authorization: Bearer $LINE_HARNESS_API_KEY" "$LINE_HARNESS_API_URL/api/line-accounts" \
   | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{for(const a of JSON.parse(s).data)console.log(a.id,a.displayName,a.liffId)})'
 ```
 
-出てきた `id` を `.env` の `LINE_HARNESS_ACCOUNT_ID` に書く。`liffId` も予約ページURLに使う。
+出てきた1つ目の値（UUID）を `.env` の `LINE_HARNESS_ACCOUNT_ID` に書く。3つ目の `liffId` は予約ページの URL に使う。
+
+### よくあるつまずき
+
+| 症状 | 原因と対処 |
+|---|---|
+| `npx: command not found` | Node.js が入っていない、またはターミナルを再起動していない |
+| ブラウザが開かない（ログイン） | ターミナルに表示された URL を手でブラウザに貼る |
+| R2 のところで止まる | Cloudflare にカードが登録されていない。2-0 の手順でカード登録してから Enter |
+| `LIFF ID は「チャネルID-ランダム文字列」の形式です` | LINE Login チャネルの ID ではなく、LIFF タブに出ている `数字-英字` を貼る |
+| Worker デプロイで `subdomain` のエラー | 2-3 の 11 で聞かれるサブドメイン登録が未完了。https://dash.cloudflare.com → Workers & Pages で「サブドメインを登録」してから再実行 |
+| 途中で Ctrl+C した／エラーで止まった | もう一度 `npx create-line-harness@latest`。済んだ手順は飛ばして再開する |
+| 管理画面にログインできない | 完了画面の API Key を貼る。コピー時に前後の空白が入っていないか確認 |
+| 友だち追加しても管理画面に出ない | ②の Webhook URL が未設定か「Webhookの利用」がオフ。①の Webhook もオンか確認 |
 
 ---
 
@@ -181,11 +276,15 @@ mp4 が用意できない間は `assets.json` の `linkUrl`（YouTube 限定公�
 
 ## §6 Claude Code に MCP を接続（10分）
 
+§2-1 のとおり `line-harness` フォルダで `npx create-line-harness` を実行していれば、`.mcp.json` は**すでに自動生成されている**。
+中身を開いて `LINE_HARNESS_API_URL` `LINE_HARNESS_API_KEY` `LINE_HARNESS_ACCOUNT_ID` が `.env` と同じ値か確認するだけでよい。
+
+別の場所で実行した場合は、ひな形からコピーして値を埋める。
+
 ```bash
 cp .mcp.json.example .mcp.json     # このディレクトリで Claude Code を開いたときに読み込まれる
 ```
 
-`.mcp.json` の `LINE_HARNESS_API_URL` `LINE_HARNESS_API_KEY` `LINE_HARNESS_ACCOUNT_ID` を `.env` と同じ値にする。
 `.mcp.json` と `.env` は `.gitignore` 済みで、リポジトリには入らない。
 
 接続後、Claude Code で次のように使える。
