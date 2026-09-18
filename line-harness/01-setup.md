@@ -76,14 +76,17 @@ node -v
 
 ### 2-1. コマンドを打つ場所に移動する
 
-ターミナルで、このリポジトリの `line-harness` フォルダに移動する。
-理由：完了時に Claude Code 用の `.mcp.json` が「コマンドを打った場所」に自動で作られるため。ここに置けばそのまま §6 が終わる。
+**git 管理されていないフォルダ**（ホームフォルダなど）で実行する。
 
 ```bash
-cd /path/to/Roots/line-harness      # 自分のパソコンでの場所に置き換える
+cd ~                                  # Mac
+cd $HOME                              # Windows PowerShell
 ```
 
-Mac なら Finder で `line-harness` フォルダを右クリック → 「フォルダに新規ターミナル」でも同じ。
+理由：管理画面（Cloudflare Pages）のデプロイ時に wrangler が「今いるフォルダの git ブランチ名」を拾う。
+このリポジトリのブランチ（`claude/...` など `main` 以外）の中で実行すると **プレビュー版として配備され、本番URLが「Nothing is here yet」になる**。
+
+完了後、コマンドを打った場所に Claude Code 用の `.mcp.json` が作られるので、`line-harness` フォルダへ移す（§6）。
 
 ### 2-2. セットアップコマンドを実行する
 
@@ -195,6 +198,7 @@ curl -s -H "Authorization: Bearer $LINE_HARNESS_API_KEY" "$LINE_HARNESS_API_URL/
 | `LIFF ID は「チャネルID-ランダム文字列」の形式です` | LINE Login チャネルの ID ではなく、LIFF タブに出ている `数字-英字` を貼る |
 | Worker デプロイで `subdomain` のエラー | 2-3 の 11 で聞かれるサブドメイン登録が未完了。https://dash.cloudflare.com → Workers & Pages で「サブドメインを登録」してから再実行 |
 | 途中で Ctrl+C した／エラーで止まった | もう一度 `npx create-line-harness@latest`。済んだ手順は飛ばして再開する |
+| 管理画面 URL が「Nothing is here yet」 | git ブランチ（`main` 以外）の中で CLI を実行したため、プレビュー版として配備された。完了ログの `Deployment alias URL`（`https://<ブランチ名>.<project>.pages.dev`）は使える。本番URLに直すには `~/.line-harness/.line-harness-setup.json` の `completedSteps` から `"admin"` を消し、git 管理外のフォルダで CLI を再実行する |
 | 管理画面にログインできない | 完了画面の API Key を貼る。コピー時に前後の空白が入っていないか確認 |
 | 友だち追加しても管理画面に出ない | ②の Webhook URL が未設定か「Webhookの利用」がオフ。①の Webhook もオンか確認 |
 
@@ -276,10 +280,16 @@ mp4 が用意できない間は `assets.json` の `linkUrl`（YouTube 限定公�
 
 ## §6 Claude Code に MCP を接続（10分）
 
-§2-1 のとおり `line-harness` フォルダで `npx create-line-harness` を実行していれば、`.mcp.json` は**すでに自動生成されている**。
-中身を開いて `LINE_HARNESS_API_URL` `LINE_HARNESS_API_KEY` `LINE_HARNESS_ACCOUNT_ID` が `.env` と同じ値か確認するだけでよい。
+`npx create-line-harness` を実行したフォルダ（§2-1 ならホームフォルダ）に `.mcp.json` が自動生成されている。
+それを `line-harness` フォルダへ移動する。
 
-別の場所で実行した場合は、ひな形からコピーして値を埋める。
+```bash
+mv ~/.mcp.json /path/to/Roots/line-harness/.mcp.json                       # Mac
+Move-Item $HOME\.mcp.json C:\path\to\Roots\line-harness\.mcp.json      # Windows PowerShell
+```
+
+中身の `LINE_HARNESS_API_URL` `LINE_HARNESS_API_KEY` `LINE_HARNESS_ACCOUNT_ID` が `.env` と同じ値か確認する。
+無ければ、ひな形からコピーして値を埋める。
 
 ```bash
 cp .mcp.json.example .mcp.json     # このディレクトリで Claude Code を開いたときに読み込まれる
