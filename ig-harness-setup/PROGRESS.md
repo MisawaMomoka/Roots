@@ -6,7 +6,9 @@
 - Meta アプリ: **Retro Harness**（会社共通アカウント info@re-tro.net で管理。ログイン時の SMS 認証は 080-xxxx-4997 の持ち主に確認）
 - Instagram アプリ名: Retro Harness-IG / Instagram アプリ ID: 1479867973365434
 - サーバー（Cloudflare Worker）: `https://ig-harness.re-tro.workers.dev`（会社の Cloudflare アカウント "re-tro"。deploy.sh ではなく公式手順で作られたもの）
-- 管理画面 URL / API Key: **未入手**（田代さんに確認中）
+- 管理画面: Retro 本番には **無い**（田代さん確認 2026-09-19）。アカウント登録は API（`POST /api/accounts`、owner 権限が必要）で行う
+- 認証キー: 田代さんが作業用の **スタッフキー** を発行して渡す（マスターの API Key は共有しない）。`POST /api/accounts` は owner ロール必須なので、スタッフキーのロールは owner にしてもらう
+- 田代さん側の手順書: 会社側リポジトリ `ig-harness-oss/docs/multi-account-2026-09-17.md`（公開 upstream には無い）
 
 ## Phase A（自分の IG アカウント接続）
 | 日付 | 作業 | 状態 |
@@ -18,7 +20,7 @@
 | 2026-09-17 | トークン生成（本人が安全な場所に保管。チャット・リポジトリには貼らない） | 完了 |
 | 2026-09-17 | Webhook サブスクリプション トグル ON | 完了 |
 | | アプリの設定 → ベーシックに 3 つの URL・カテゴリ・アイコンを登録 | 未 |
-| | 管理画面「設定 → Instagram アカウント」で nami_beauty21 を登録（登録前に既存アカウントの有無を確認し、置き換え/追加を本人に確認） | 未（管理画面 URL / API Key 待ち） |
+| | `GET /api/accounts` で既存アカウントの有無を確認 → `POST /api/accounts` で nami_beauty21 を登録（追加方式。実行前に本人に確認） | 未（owner ロールのスタッフキー待ち） |
 | | `verify.sh` 相当のアカウントレベル購読（POST /{IG_USER_ID}/subscribed_apps） | 未 |
 | | Meta「公開」→ 公開する | 未 |
 | | 別アカウントから DM を送って受信テスト | 未 |
