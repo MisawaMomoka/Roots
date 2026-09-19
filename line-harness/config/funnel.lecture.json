@@ -1,0 +1,130 @@
+{
+  "$comment": "LINE2（リクさん・講義 → 個別相談会）の定義。apply.mjs --config=config/funnel.lecture.json で反映。messages は config/messages/lecture/ を参照。",
+  "messagesDir": "lecture",
+
+  "autoApprove": true,
+  "thanksMaxAgeMinutes": 180,
+  "prevDay": { "time": "19:00", "cutoffTime": "22:00" },
+  "sameDay": { "minutesBefore": 120 },
+  "lookaheadDays": 60,
+
+  "tags": [
+    { "key": "watched",   "name": "講義_視聴ページを開いた", "color": "#3B82F6" },
+    { "key": "applied",   "name": "講義_相談会申込",         "color": "#F59E0B" },
+    { "key": "confirmed", "name": "講義_相談会予約確定",     "color": "#10B981" }
+  ],
+
+  "trackedLinks": {
+    "lecturePage": {
+      "name": "講義動画ページ",
+      "originalUrl": "__LECTURE_PAGE_URL__",
+      "tag": "watched"
+    }
+  },
+
+  "forms": {
+    "apply": {
+      "name": "個別相談会 申込アンケート",
+      "description": "講義をご覧いただきありがとうございます。個別相談会のご希望を教えてください（1分で終わります）。",
+      "fields": [
+        { "name": "full_name", "label": "お名前", "type": "text", "required": true, "placeholder": "山田 花子" },
+        { "name": "situation", "label": "今のお悩みに一番近いもの", "type": "radio", "required": true,
+          "options": ["【要差し替え】選択肢1", "【要差し替え】選択肢2", "【要差し替え】選択肢3", "その他"] },
+        { "name": "goal", "label": "相談会で一番聞きたいこと", "type": "textarea", "required": false, "placeholder": "自由にどうぞ" },
+        { "name": "preferred", "label": "都合のよい時間帯（複数可）", "type": "checkbox", "required": true,
+          "options": ["平日 午前", "平日 午後", "平日 夜", "土曜"] }
+      ],
+      "onSubmitTag": "applied",
+      "onSubmitMessageFile": "apply-thanks.txt",
+      "saveToMetadata": true
+    }
+  },
+
+  "scenarios": {
+    "drip": {
+      "name": "講義_友だち追加ステップ",
+      "description": "友だち追加 → 講義動画ページ → 教育 → 申込の後押し（亀さん型）。申込済みの人には後押しを送らない",
+      "triggerType": "friend_add",
+      "deliveryMode": "absolute_time",
+      "steps": [
+        { "type": "text", "file": "drip-00-welcome.txt",   "offsetDays": 0, "deliveryTime": "00:00",
+          "$comment": "00:00 は『登録時刻が過ぎているので即時』の意味（absolute_time は過去時刻を今に丸める）" },
+        { "type": "text", "file": "drip-01-highlights.txt", "offsetDays": 0, "deliveryTime": "21:00", "skipIfTag": "applied" },
+        { "type": "text", "file": "drip-02-education.txt",  "offsetDays": 1, "deliveryTime": "08:00", "skipIfTag": "applied" },
+        { "type": "text", "file": "drip-03-deadline.txt",   "offsetDays": 1, "deliveryTime": "20:00", "skipIfTag": "applied" },
+        { "type": "text", "file": "drip-04-lastcall.txt",   "offsetDays": 2, "deliveryTime": "20:00", "skipIfTag": "applied" }
+      ]
+    },
+    "applied": {
+      "name": "講義_申込後フォロー",
+      "description": "アンケート送信（タグ付与）直後に予約ページを案内。24時間後にまだ未予約なら念押し",
+      "triggerType": "tag_added",
+      "triggerTag": "applied",
+      "deliveryMode": "relative",
+      "steps": [
+        { "type": "text", "file": "applied-01-booking.txt",  "delayMinutes": 0 },
+        { "type": "text", "file": "applied-02-reminder.txt", "delayMinutes": 1440, "skipIfTag": "confirmed" }
+      ]
+    },
+    "thanks": {
+      "name": "相談会_予約直後",
+      "description": "予約確定の直後。お礼＋日程＋当日までの過ごし方",
+      "triggerType": "manual",
+      "deliveryMode": "relative",
+      "steps": [
+        { "type": "text", "file": "booking-01.txt", "delayMinutes": 0 }
+      ]
+    },
+    "reschedule": {
+      "name": "相談会_日程変更",
+      "description": "2回目以降の予約確定（日程変更）",
+      "triggerType": "manual",
+      "deliveryMode": "relative",
+      "steps": [
+        { "type": "text", "file": "reschedule-01.txt", "delayMinutes": 0 }
+      ]
+    },
+    "prevday": {
+      "name": "相談会_前日19時",
+      "description": "相談会の前日 19:00。前振り＋宿題",
+      "triggerType": "manual",
+      "deliveryMode": "absolute_time",
+      "steps": [
+        { "type": "text", "file": "prevday-01.txt", "offsetDays": 0, "deliveryTime": "19:00" }
+      ]
+    },
+    "sameday": {
+      "name": "相談会_当日2時間前",
+      "description": "相談会の開始2時間前。参加URL・持ち物・担当者名",
+      "triggerType": "manual",
+      "deliveryMode": "relative",
+      "steps": [
+        { "type": "text", "file": "sameday-01.txt", "delayMinutes": 0 }
+      ]
+    }
+  },
+
+  "booking": {
+    "menu": {
+      "name": "個別相談会（オンライン・60分）",
+      "category_label": "相談会",
+      "description": "講義の内容をもとに、あなたの状況に合わせて一緒に整理する60分（オンライン・マンツーマン）",
+      "duration_minutes": 60,
+      "buffer_after_minutes": 0,
+      "base_price": 0,
+      "sort_order": 0,
+      "auto_tag": null
+    },
+    "staff": [
+      { "name": "リク", "display_name": "リク", "role": "講師" }
+    ],
+    "availabilityRules": [
+      { "weekday": 1, "start_time": "10:00", "end_time": "21:00" },
+      { "weekday": 2, "start_time": "10:00", "end_time": "21:00" },
+      { "weekday": 3, "start_time": "10:00", "end_time": "21:00" },
+      { "weekday": 4, "start_time": "10:00", "end_time": "21:00" },
+      { "weekday": 5, "start_time": "10:00", "end_time": "21:00" },
+      { "weekday": 6, "start_time": "10:00", "end_time": "18:00" }
+    ]
+  }
+}

@@ -163,3 +163,22 @@ test('runSync: 別メニューの予約には触らない', async () => {
   assert.equal(s.approved, 0);
   assert.deepEqual(state.enrolled, []);
 });
+
+test('講義設定でも runSync が動く（シナリオ名・タグ名は設定から解決）', async () => {
+  const lecture = loadFunnelConfig('config/funnel.lecture.json');
+  const now = jstDateTime('2026-09-15', '10:00');
+  const state = {
+    now,
+    scenarios: Object.entries(lecture.scenarios).map(([key, s]) => ({ id: `sc-${key}`, name: s.name })),
+    tags: lecture.tags.map((t) => ({ id: `tg-${t.key}`, name: t.name })),
+    bookings: [booking({ status: 'requested', decided_at: null, menu_name: lecture.booking.menu.name, staff_name: 'リク' })],
+    friends: { 'fr-1': { id: 'fr-1', displayName: '三沢', isFollowing: true, metadata: {}, tags: [] } },
+    enrolled: [],
+  };
+  const { api } = mockApi(state);
+  const s = await runSync({ api, config: lecture, assets: { defaultMeetingUrl: 'https://zoom.us/j/9' }, accountId: 'acc2', now, info: () => {} });
+  assert.equal(s.approved, 1);
+  assert.deepEqual(state.enrolled, ['sc-thanks']);
+  assert.deepEqual(state.friends['fr-1'].tags, [{ id: 'tg-confirmed' }]);
+  assert.equal(state.friends['fr-1'].metadata.diag_staff, 'リク');
+});

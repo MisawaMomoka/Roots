@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>講義動画</title>
+<meta name="description" content="LINE限定の講義動画と、個別相談会の申込フォーム">
+<!--
+  講義動画ページ（LINE2 用）。動画の下に「個別相談会に申し込む」ボタンがあり、
+  L Harness のアンケートフォーム（LIFF）に飛ぶ。設定は下の <script id="config"> だけ。
+  配置先: Cloudflare Pages（line-harness/lecture-page/README.md）
+-->
+<script id="config" type="application/json">
+{
+  "title": "【要差し替え】講座名",
+  "speaker": "リク",
+  "durationLabel": "約〇〇分",
+  "video": {
+    "youtubeId": "",
+    "vimeoId": "",
+    "mp4Url": "",
+    "posterUrl": ""
+  },
+  "formUrl": "https://liff.line.me/LIFF_ID_LINE2?page=form&id=FORM_ID",
+  "ctaLabel": "個別相談会に申し込む（無料・1分）",
+  "ctaNote": "講義の内容を、あなたの状況に当てはめて整理する60分。オンライン・マンツーマン。",
+  "points": [
+    "【要差し替え】見どころ1",
+    "【要差し替え】見どころ2",
+    "【要差し替え】見どころ3"
+  ]
+}
+</script>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1f2937; --muted: #6b7280;
+    --accent: #06c755; --accent-text: #ffffff; --border: #e5e7eb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115; --card: #171a21; --text: #e5e7eb; --muted: #9ca3af; --border: #2a2f3a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1115; --card: #171a21; --text: #e5e7eb; --muted: #9ca3af; --border: #2a2f3a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; line-height: 1.7; }
+  main { max-width: 640px; margin: 0 auto; padding: 16px 16px 48px; }
+  h1 { font-size: 1.25rem; margin: 8px 0 4px; }
+  .meta { color: var(--muted); font-size: 0.9rem; margin: 0 0 12px; }
+  .video { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; }
+  .video iframe, .video video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video.portrait { aspect-ratio: 9 / 16; max-height: 80vh; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 16px; }
+  .card h2 { font-size: 1rem; margin: 0 0 8px; }
+  ul.points { margin: 0; padding-left: 1.2em; }
+  .cta { display: block; text-align: center; background: var(--accent); color: var(--accent-text); text-decoration: none; font-weight: 700; font-size: 1.05rem; padding: 16px; border-radius: 999px; margin-top: 16px; }
+  .cta:active { opacity: .85; }
+  .note { color: var(--muted); font-size: 0.85rem; text-align: center; margin: 8px 0 0; }
+  .sticky { position: sticky; bottom: 12px; margin-top: 24px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="title"></h1>
+  <p class="meta"><span id="speaker"></span> ・ <span id="duration"></span></p>
+
+  <div class="video" id="video"></div>
+
+  <section class="card" id="pointsCard">
+    <h2>この講義でお話ししていること</h2>
+    <ul class="points" id="points"></ul>
+  </section>
+
+  <section class="card">
+    <h2>見終わったら</h2>
+    <p id="ctaNote" style="margin:0"></p>
+    <a class="cta" id="cta" href="#">個別相談会に申し込む</a>
+    <p class="note">LINEのアンケート画面が開きます（1分で終わります）</p>
+  </section>
+
+  <div class="sticky">
+    <a class="cta" id="ctaSticky" href="#">個別相談会に申し込む</a>
+  </div>
+</main>
+
+<script>
+(function () {
+  var cfg;
+  try { cfg = JSON.parse(document.getElementById('config').textContent); } catch (e) { cfg = {}; }
+  var $ = function (id) { return document.getElementById(id); };
+  var text = function (id, v) { $(id).textContent = v || ''; };
+
+  document.title = cfg.title || '講義動画';
+  text('title', cfg.title);
+  text('speaker', cfg.speaker);
+  text('duration', cfg.durationLabel);
+  text('ctaNote', cfg.ctaNote);
+
+  // 動画：YouTube → Vimeo → mp4 の順で最初に設定があるものを使う
+  var v = cfg.video || {};
+  var box = $('video');
+  if (v.youtubeId) {
+    var yt = document.createElement('iframe');
+    yt.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.youtubeId) + '?rel=0&playsinline=1';
+    yt.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+    yt.allowFullscreen = true;
+    yt.title = cfg.title || '講義動画';
+    box.appendChild(yt);
+  } else if (v.vimeoId) {
+    var vm = document.createElement('iframe');
+    vm.src = 'https://player.vimeo.com/video/' + encodeURIComponent(v.vimeoId) + '?dnt=1&playsinline=1';
+    vm.allow = 'autoplay; fullscreen; picture-in-picture';
+    vm.allowFullscreen = true;
+    vm.title = cfg.title || '講義動画';
+    box.appendChild(vm);
+  } else if (v.mp4Url) {
+    var el = document.createElement('video');
+    el.src = v.mp4Url;
+    el.controls = true;
+    el.playsInline = true;
+    el.preload = 'metadata';
+    if (v.posterUrl) el.poster = v.posterUrl;
+    if (v.portrait) box.classList.add('portrait');
+    box.appendChild(el);
+  } else {
+    box.classList.add('hidden');
+  }
+
+  // 見どころ
+  var points = Array.isArray(cfg.points) ? cfg.points.filter(Boolean) : [];
+  if (points.length === 0) { $('pointsCard').classList.add('hidden'); }
+  points.forEach(function (p) { var li = document.createElement('li'); li.textContent = p; $('points').appendChild(li); });
+
+  // CTA：LIFF のアンケートへ。?f=<friendId> が付いていれば L Harness のトラッキングリンク経由の来訪なので、
+  // そのまま引き継いでも害はない（フォーム側は LIFF で本人を特定するため必須ではない）
+  var formUrl = cfg.formUrl || '#';
+  [$('cta'), $('ctaSticky')].forEach(function (a) {
+    a.href = formUrl;
+    a.textContent = cfg.ctaLabel || a.textContent;
+  });
+})();
+</script>
+</body>
+</html>

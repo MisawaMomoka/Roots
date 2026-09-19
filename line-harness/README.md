@@ -41,13 +41,25 @@
 | [`01-setup.md`](01-setup.md) | 環境構築の手順（LINE Developers / Cloudflare / Googleカレンダー / MCP） |
 | [`02-flow-design.md`](02-flow-design.md) | 配信設計。どの機能に何を載せるか、タイムライン、制約と判断理由 |
 | [`03-operations.md`](03-operations.md) | 運用手順。適用・テスト・文面変更・日程変更・監視・Claude Code での操作例 |
-| [`config/funnel.json`](config/funnel.json) | タグ・シナリオ・予約メニュー・担当者の定義（機械可読） |
+| [`04-lecture-funnel.md`](04-lecture-funnel.md) | **LINE2（リクさん・講義 → 個別相談会）の設計。** LINE1 からの誘導、動画ページ、アンケート、配信タイミング |
+| [`lecture-page/`](lecture-page/) | LINE2 用の動画視聴ページ（動画＋申込ボタン）。Cloudflare Pages に置く |
+| [`config/funnel.lecture.json`](config/funnel.lecture.json) / [`config/messages/lecture/`](config/messages/lecture/) | LINE2 の定義と配信文（【要差し替え】箇所あり） |
+| [`config/funnel.json`](config/funnel.json) | LINE1（ゆうなりさん・診断会）のタグ・シナリオ・予約メニュー・担当者の定義 |
 | [`config/messages/`](config/messages/) | 配信文の本体。`presales-education-video/` の文面を L Harness 変数に置き換えたもの |
 | [`config/assets.example.json`](config/assets.example.json) | 動画URL・サムネイルURL・担当者ごとのZoom URL のひな形 |
 | [`scripts/apply.mjs`](scripts/apply.mjs) | 定義を L Harness に反映（何度実行しても同じ結果になる） |
 | [`scripts/sync-bookings.mjs`](scripts/sync-bookings.mjs) | 予約 → 承認 → 予約直後／前日／当日のシナリオ登録（定期実行） |
 | [`scripts/test/`](scripts/test/) | モックAPIでスクリプトの判断ロジックを検証する `node --test` |
 | [`.env.example`](.env.example) / [`.mcp.json.example`](.mcp.json.example) | 接続情報と Claude Code MCP 設定のひな形 |
+
+## 2つの公式LINE
+
+| | LINE1（理駆・既存） | LINE2（新規） |
+|---|---|---|
+| 役割 | 講義の案内だけ流し、LINE2 へ誘導 | 講義動画 → アンケート → 個別相談会 |
+| 設定 | `config/funnel.json`（診断会の型。LINE1 に流す案内文は別途） | `config/funnel.lecture.json` |
+| 接続情報 | `.env` | `.env.lecture` |
+| コマンド | `pnpm apply` / `pnpm sync` | `pnpm apply:lecture` / `pnpm sync:lecture` |
 
 ## 前提
 

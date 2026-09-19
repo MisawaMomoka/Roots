@@ -69,7 +69,10 @@ pnpm apply:booking           # 予約メニュー・担当者・受付時間も�
 
 ```cron
 */5 * * * * cd /path/to/Roots/line-harness && /usr/local/bin/node scripts/sync-bookings.mjs >> /var/log/roots-line-sync.log 2>&1
+*/5 * * * * cd /path/to/Roots/line-harness && /usr/local/bin/node scripts/sync-bookings.mjs --env=.env.lecture --config=config/funnel.lecture.json >> /var/log/roots-line-sync-lecture.log 2>&1
 ```
+
+Windows で常時起動の PC に置く場合は「タスク スケジューラ」で5分おきに `node.exe scripts\sync-bookings.mjs` を実行する（作業フォルダを `line-harness` にする）。LINE2 用は引数付きでもう1件登録する。
 
 ### 選択肢B：GitHub Actions（5分間隔だが遅延10分以上のことがある）
 

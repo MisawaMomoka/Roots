@@ -132,8 +132,12 @@ export function loadJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-export function loadFunnelConfig() {
-  return loadJson(join(CONFIG_DIR, 'funnel.json'));
+/** --config=<path> で別ファイルを選べる。省略時は config/funnel.json */
+export function loadFunnelConfig(path) {
+  const file = path ? resolve(ROOT_DIR, path) : join(CONFIG_DIR, 'funnel.json');
+  const config = loadJson(file);
+  config.$file = file;
+  return config;
 }
 
 /** assets.json が無ければ null（apply はリンク無しで警告、sync は会議URL空で続行） */
@@ -142,8 +146,9 @@ export function loadAssets() {
   return existsSync(path) ? loadJson(path) : null;
 }
 
-export function readMessageFile(name) {
-  return readFileSync(join(MESSAGES_DIR, name), 'utf8').replace(/\s+$/, '');
+/** messagesDir（funnel.json の "messagesDir"）配下の文面を読む。未指定なら config/messages 直下 */
+export function readMessageFile(name, messagesDir) {
+  return readFileSync(join(MESSAGES_DIR, messagesDir ?? '', name), 'utf8').replace(/\s+$/, '');
 }
 
 export function parseArgs(argv = process.argv.slice(2)) {

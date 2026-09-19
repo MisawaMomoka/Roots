@@ -1,4 +1,7 @@
 .env
+.env.*
+!.env.example
+!.env.lecture.example
 .mcp.json
 config/assets.json
 node_modules/

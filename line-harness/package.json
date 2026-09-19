@@ -2,12 +2,17 @@
   "name": "roots-line-harness-funnel",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "apply": "node scripts/apply.mjs",
     "apply:booking": "node scripts/apply.mjs --booking",
     "sync": "node scripts/sync-bookings.mjs",
     "sync:dry": "node scripts/sync-bookings.mjs --dry-run --verbose",
-    "test": "node --test \"scripts/test/**/*.test.mjs\""
+    "test": "node --test \"scripts/test/**/*.test.mjs\"",
+    "apply:lecture": "node scripts/apply.mjs --env=.env.lecture --config=config/funnel.lecture.json",
+    "apply:lecture:booking": "node scripts/apply.mjs --env=.env.lecture --config=config/funnel.lecture.json --booking",
+    "sync:lecture": "node scripts/sync-bookings.mjs --env=.env.lecture --config=config/funnel.lecture.json"
   }
 }

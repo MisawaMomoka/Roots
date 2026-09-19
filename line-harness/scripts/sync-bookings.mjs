@@ -6,14 +6,17 @@
 //   3. タイミングが来たら「予約直後」「前日19時」「当日2時間前」のシナリオに登録する
 //      送信済みかどうかは友だちメタデータ（diag_*_sent_for = 予約ID）で判定する
 //
-//   node scripts/sync-bookings.mjs                 実行
+//   node scripts/sync-bookings.mjs                 実行（config/funnel.json）
+//   node scripts/sync-bookings.mjs --env=.env.lecture --config=config/funnel.lecture.json   LINE2 用
 //   node scripts/sync-bookings.mjs --dry-run       書き込みなし
 //   node scripts/sync-bookings.mjs --verbose       判断の理由も表示
 import { execFileSync } from 'node:child_process';
 import {
   loadEnv, requireEnv, createApi, loadFunnelConfig, loadAssets, parseArgs, ApiError,
   jstDateString, jstDateLabel, jstTimeLabel, jstDateTime, addDaysJst,
+  ROOT_DIR,
 } from './lib.mjs';
+import { resolve } from 'node:path';
 
 const MS = { minute: 60_000, hour: 3_600_000, day: 86_400_000 };
 
@@ -81,7 +84,7 @@ export async function runSync({ api, config, assets, accountId, now = new Date()
   const scenarioId = {};
   for (const [key, def] of Object.entries(config.scenarios)) {
     const found = scenarios.find((s) => s.name === def.name);
-    if (!found && key !== 'welcome') throw new Error(`シナリオ「${def.name}」がありません。先に node scripts/apply.mjs を実行してください`);
+    if (!found && ['thanks', 'reschedule', 'prevday', 'sameday'].includes(key)) throw new Error(`シナリオ「${def.name}」がありません。先に node scripts/apply.mjs を実行してください`);
     if (found) scenarioId[key] = found.id;
   }
   const tags = (await api('GET', '/api/tags')).data;
@@ -185,11 +188,11 @@ export function cancelBuiltinReminders({ d1Name, workerDir, dryRun, info = conso
 
 const isMain = process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href;
 if (isMain) {
-  loadEnv();
   const args = parseArgs();
+  loadEnv(args.get('env') ? resolve(ROOT_DIR, args.get('env')) : undefined);
   const dryRun = args.has('dry-run');
   const verbose = args.has('verbose');
-  const config = loadFunnelConfig();
+  const config = loadFunnelConfig(args.get('config'));
   const assets = loadAssets();
   const api = createApi({ apiUrl: requireEnv('LINE_HARNESS_API_URL'), apiKey: requireEnv('LINE_HARNESS_API_KEY'), dryRun });
   try {
