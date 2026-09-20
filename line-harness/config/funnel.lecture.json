@@ -117,14 +117,9 @@
     },
     "$staffComment": "営業担当は1人1行。availabilityRules を担当者に書けばその人だけの受付時間になる（無ければ下の共通設定）。名前は assets.json の staffMeetingUrls のキーと一致させる",
     "staff": [
-      { "name": "営業担当A", "display_name": "営業担当A", "role": "個別相談 担当", "sort_order": 1 },
-      { "name": "営業担当B", "display_name": "営業担当B", "role": "個別相談 担当", "sort_order": 2 },
-      { "name": "営業担当C", "display_name": "営業担当C", "role": "個別相談 担当", "sort_order": 3,
-        "availabilityRules": [
-          { "weekday": 2, "start_time": "13:00", "end_time": "21:00" },
-          { "weekday": 4, "start_time": "13:00", "end_time": "21:00" },
-          { "weekday": 6, "start_time": "10:00", "end_time": "18:00" }
-        ] }
+      { "name": "徳原", "display_name": "徳原さん", "role": "個別相談 担当", "sort_order": 1 },
+      { "name": "池端", "display_name": "池端さん", "role": "個別相談 担当", "sort_order": 2 },
+      { "name": "重田", "display_name": "重田さん", "role": "個別相談 担当", "sort_order": 3 }
     ],
     "availabilityRules": [
       { "weekday": 1, "start_time": "10:00", "end_time": "21:00" },

@@ -16,9 +16,9 @@
 
   "staffMeetingUrls": {
     "担当者A": "https://zoom.us/j/0000000000?pwd=xxxx",
-    "営業担当A": "https://zoom.us/j/1111111111?pwd=xxxx",
-    "営業担当B": "https://zoom.us/j/2222222222?pwd=xxxx",
-    "営業担当C": "https://zoom.us/j/3333333333?pwd=xxxx"
+    "徳原さん": "https://zoom.us/j/1111111111?pwd=xxxx",
+    "池端さん": "https://zoom.us/j/2222222222?pwd=xxxx",
+    "重田さん": "https://zoom.us/j/3333333333?pwd=xxxx"
   },
   "defaultMeetingUrl": "https://zoom.us/j/0000000000?pwd=xxxx"
 }
