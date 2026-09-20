@@ -190,3 +190,24 @@ test('ensureBooking: 担当者ごとの受付時間があればそれを使い�
   assert.deepEqual(rules[0], lecture.booking.availabilityRules);
   assert.deepEqual(rules[2], own);
 });
+
+// ---------- LINE1（誘導）設定 ----------
+
+test('LINE1 設定: Flex にサムネイルと LINE2 の auth_url が入り、余計なプレースホルダーが残らない', () => {
+  const line1 = loadFunnelConfig('config/funnel.line1.json');
+  const ctx = {
+    assets: null, messagesDir: line1.messagesDir, tagIds: {},
+    placeholders: { LINE2_CHANNEL_ID: '2011652832', THUMB_URL: 'https://roots-lecture.pages.dev/thumb.jpg', THUMB_ASPECT: '16:9' },
+  };
+  const steps = buildStepPayloads(line1.scenarios.invite, ctx);
+  assert.equal(steps.length, 2);
+  assert.equal(steps[0].messageType, 'text');
+  assert.equal(steps[1].messageType, 'flex');
+  const bubble = JSON.parse(steps[1].messageContent);
+  assert.equal(bubble.hero.url, 'https://roots-lecture.pages.dev/thumb.jpg');
+  assert.equal(bubble.hero.aspectRatio, '16:9');
+  assert.equal(bubble.footer.contents[0].action.uri, '{{auth_url:2011652832}}');
+  assert.equal(bubble.hero.action.uri, '{{auth_url:2011652832}}');
+  for (const s of steps) assert.ok(!s.messageContent.includes('__'), '未置換のプレースホルダー');
+  assert.throws(() => buildStepPayloads(line1.scenarios.invite, { ...ctx, placeholders: {} }), /THUMB_URL|LINE2_CHANNEL_ID/);
+});

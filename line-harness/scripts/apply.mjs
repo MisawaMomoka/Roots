@@ -3,6 +3,7 @@
 //
 //   node scripts/apply.mjs                                   config/funnel.json（LINE1・診断会）
 //   node scripts/apply.mjs --config=config/funnel.lecture.json   LINE2・講義 → 相談会
+//   node scripts/apply.mjs --env=.env.line1 --config=config/funnel.line1.json   LINE1・LINE2 への誘導
 //   node scripts/apply.mjs --booking                          予約メニュー・担当者・受付時間も反映（LINE_HARNESS_ACCOUNT_ID 必須）
 //   node scripts/apply.mjs --dry-run                          書き込みせず、実行予定の API 呼び出しを表示
 //   node scripts/apply.mjs --env=.env.lecture ...             接続情報を別ファイルから読む（LINE2 用）
@@ -13,6 +14,7 @@
 //   __LECTURE_LINK__       トラッキングリンク "lecturePage" の配信用 URL
 //   __LECTURE_PAGE_URL__   .env の LECTURE_PAGE_URL（トラッキングリンクの飛び先）
 //   __FORM_ID_<key>__      作成したフォームの ID（{{form_url:__FORM_ID_apply__}} のように使う）
+//   __LINE2_CHANNEL_ID__ / __THUMB_URL__ / __THUMB_ASPECT__   .env.line1 の値（LINE1 の誘導 Flex 用）
 import {
   loadEnv, requireEnv, createApi, loadFunnelConfig, loadAssets, readMessageFile, parseArgs, ApiError,
   ROOT_DIR,
@@ -43,6 +45,10 @@ export function buildStepContent(step, ctx) {
   if (step.type === 'text') {
     const content = readMessageFile(step.file, dir);
     return { messageType: 'text', messageContent: fillPlaceholders(content, ctx, step.file) };
+  }
+  if (step.type === 'flex') {
+    const json = fillPlaceholders(readMessageFile(step.file, dir), ctx, step.file);
+    return { messageType: 'flex', messageContent: JSON.stringify(JSON.parse(json)) };
   }
   if (step.type === 'video') {
     const asset = ctx.assets?.[step.asset];
@@ -312,6 +318,9 @@ export async function applyAll({ api, config, assets, env = {}, lineAccountId, w
     placeholders: {
       BOOKING_URL: env.BOOKING_URL,
       LECTURE_PAGE_URL: env.LECTURE_PAGE_URL,
+      LINE2_CHANNEL_ID: env.LINE2_CHANNEL_ID,
+      THUMB_URL: env.THUMB_URL,
+      THUMB_ASPECT: env.THUMB_ASPECT || '16:9',
     },
   };
   ctx.tagIds = await ensureTags(api, config.tags, log);

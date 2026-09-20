@@ -1,0 +1,17 @@
+{
+  "$comment": "LINE1（理駆・既存）用。友だち追加の直後にサムネイル＋受け取りボタンを送り、LINE2（講義）へ誘導するだけ。apply.mjs --env=.env.line1 --config=config/funnel.line1.json",
+  "messagesDir": "line1",
+  "tags": [],
+  "scenarios": {
+    "invite": {
+      "name": "講義_LINE2への誘導",
+      "description": "友だち追加直後。短い一言 → サムネイル付きの受け取りボタン（LINE2 の友だち追加リンク）",
+      "triggerType": "friend_add",
+      "deliveryMode": "relative",
+      "steps": [
+        { "type": "text", "file": "invite-01.txt", "delayMinutes": 0 },
+        { "type": "flex", "file": "invite.flex.json", "delayMinutes": 0 }
+      ]
+    }
+  }
+}

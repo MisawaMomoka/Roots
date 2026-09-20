@@ -36,16 +36,22 @@ LINE2 友だち追加
 
 ---
 
-## LINE1 側に置くもの
+## LINE1 側に置くもの（`config/funnel.line1.json`）
 
-LINE1 の配信文（シナリオでも一斉配信でも）に、次の1行を入れるだけ。
+LINE1 を友だち追加した直後に、2通で LINE2 へ誘導する。
 
-```
-{{auth_url:<LINE2 の Messaging API チャネルID>}}
-```
+| # | タイミング | 内容 |
+|---|---|---|
+| 1 | 友だち追加 直後 | 一言（`messages/line1/invite-01.txt`） |
+| 2 | 同・直後 | サムネイル画像＋「やせ習慣1Day講義 受け取りはこちら👇」＋緑のボタン「講義を受け取る（無料）」（`messages/line1/invite.flex.json`） |
 
-配信時に「本人のIDが付いた LINE2 の友だち追加リンク」に展開される。
-LP や他媒体からは `https://roots-line.re-tro.workers.dev/auth/line?account=<LINE2のチャネルID>&ref=lp` の形で貼る（`ref` で流入元を分ける）。
+画像とボタンのリンク先は `{{auth_url:2011652832}}`。配信時に「本人のIDが付いた LINE2 の友だち追加リンク」に展開され、LINE1 と LINE2 で同一人物として紐づく。
+LP や他媒体からは `https://roots-line.re-tro.workers.dev/auth/line?account=2011652832&ref=lp` の形で貼る（`ref` で流入元を分ける）。
+
+反映：`.env.line1.example` → `.env.line1`（LINE1 の `LINE_HARNESS_ACCOUNT_ID` とサムネイル URL を入れる）→ `pnpm apply:line1`。
+**LINE1 のアカウントIDは必ず入れる**（空だと「全アカウント共通」のシナリオになり、LINE2 の友だち追加でも発火してしまう）。
+
+サムネイル画像は `lecture-page/` フォルダに `thumb.jpg` として置いて一緒に配備すると `https://roots-lecture.pages.dev/thumb.jpg` で使える（1MB 以下、横長なら 16:9）。
 
 ---
 

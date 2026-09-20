@@ -1,0 +1,35 @@
+{
+  "type": "bubble",
+  "size": "mega",
+  "hero": {
+    "type": "image",
+    "url": "__THUMB_URL__",
+    "size": "full",
+    "aspectRatio": "__THUMB_ASPECT__",
+    "aspectMode": "cover",
+    "action": { "type": "uri", "label": "講義を受け取る", "uri": "{{auth_url:__LINE2_CHANNEL_ID__}}" }
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "contents": [
+      { "type": "text", "text": "やせ習慣1Day講義", "weight": "bold", "size": "xl", "wrap": true },
+      { "type": "text", "text": "受け取りはこちら👇", "size": "md", "wrap": true },
+      { "type": "text", "text": "ボタンを押すと講義専用のLINEが開きます。友だち追加すると、すぐに講義動画が届きます。", "size": "sm", "color": "#888888", "wrap": true }
+    ]
+  },
+  "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "button",
+        "style": "primary",
+        "color": "#06C755",
+        "height": "md",
+        "action": { "type": "uri", "label": "講義を受け取る（無料）", "uri": "{{auth_url:__LINE2_CHANNEL_ID__}}" }
+      }
+    ]
+  }
+}

@@ -11,9 +11,10 @@
     "sync": "node scripts/sync-bookings.mjs",
     "sync:dry": "node scripts/sync-bookings.mjs --dry-run --verbose",
     "test": "node --test \"scripts/test/**/*.test.mjs\"",
+    "apply:line1": "node scripts/apply.mjs --env=.env.line1 --config=config/funnel.line1.json",
     "apply:lecture": "node scripts/apply.mjs --env=.env.lecture --config=config/funnel.lecture.json",
     "apply:lecture:booking": "node scripts/apply.mjs --env=.env.lecture --config=config/funnel.lecture.json --booking",
     "sync:lecture": "node scripts/sync-bookings.mjs --env=.env.lecture --config=config/funnel.lecture.json",
     "google-link:lecture": "node scripts/google-link.mjs --env=.env.lecture"
   }
-}\n
+}
