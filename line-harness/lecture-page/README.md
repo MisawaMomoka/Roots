@@ -21,8 +21,10 @@ LINE2 配信文 ── トラッキングリンク ──▶ このページ（�
 | `video.mp4Url` | 自前ホスティング（R2 など）の mp4 URL。縦動画なら `"portrait": true` も追加 |
 | `formUrl` | `https://liff.line.me/<LINE2 の LIFF ID>?page=form&id=<フォームID>`。フォームIDは `pnpm apply -- --config=config/funnel.lecture.json` の出力に出る |
 | `points` | 見どころ。空配列にすると欄ごと消える |
+| `bonus` | 特典動画（エクササイズ動画2本など）。`youtubeId` などが空のものは表示されない。全部空なら欄ごと消える |
 
 YouTube は「限定公開」にし、「埋め込みを許可」をオンにする。
+動画ファイルを直接置く場合、Cloudflare Pages は 1ファイル 25MB までなので講義動画は置けない。R2（公開バケット）か YouTube を使う。
 
 `thumb.jpg`（1600×900・16:9）は LINE1 の誘導カードに使うサムネイル。このフォルダごと配備すると
 `https://roots-lecture.pages.dev/thumb.jpg` で参照できる（`.env.line1` の `THUMB_URL`）。

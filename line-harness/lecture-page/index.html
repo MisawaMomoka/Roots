@@ -29,6 +29,11 @@
     "【要差し替え】見どころ1",
     "【要差し替え】見どころ2",
     "【要差し替え】見どころ3"
+  ],
+  "bonusTitle": "特典：グングン痩せる㊙エクササイズ動画（2本）",
+  "bonus": [
+    { "title": "エクササイズ動画①", "youtubeId": "", "vimeoId": "", "mp4Url": "" },
+    { "title": "エクササイズ動画②", "youtubeId": "", "vimeoId": "", "mp4Url": "" }
   ]
 }
 </script>
@@ -61,6 +66,8 @@
   .note { color: var(--muted); font-size: 0.85rem; text-align: center; margin: 8px 0 0; }
   .sticky { position: sticky; bottom: 12px; margin-top: 24px; }
   .hidden { display: none; }
+  .bonus-item { margin-top: 12px; }
+  .bonus-item h3 { font-size: 0.95rem; margin: 0 0 6px; }
 </style>
 </head>
 <body>
@@ -73,6 +80,11 @@
   <section class="card" id="pointsCard">
     <h2>この講義でお話ししていること</h2>
     <ul class="points" id="points"></ul>
+  </section>
+
+  <section class="card hidden" id="bonusCard">
+    <h2 id="bonusTitle"></h2>
+    <div id="bonusList"></div>
   </section>
 
   <section class="card">
@@ -101,34 +113,57 @@
   text('ctaNote', cfg.ctaNote);
 
   // 動画：YouTube → Vimeo → mp4 の順で最初に設定があるものを使う
+  function buildVideo(v, box, title) {
+    v = v || {};
+    if (v.youtubeId) {
+      var yt = document.createElement('iframe');
+      yt.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.youtubeId) + '?rel=0&playsinline=1';
+      yt.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+      yt.allowFullscreen = true;
+      yt.title = title || '動画';
+      box.appendChild(yt);
+      return true;
+    }
+    if (v.vimeoId) {
+      var vm = document.createElement('iframe');
+      vm.src = 'https://player.vimeo.com/video/' + encodeURIComponent(v.vimeoId) + '?dnt=1&playsinline=1';
+      vm.allow = 'autoplay; fullscreen; picture-in-picture';
+      vm.allowFullscreen = true;
+      vm.title = title || '動画';
+      box.appendChild(vm);
+      return true;
+    }
+    if (v.mp4Url) {
+      var el = document.createElement('video');
+      el.src = v.mp4Url;
+      el.controls = true;
+      el.playsInline = true;
+      el.preload = 'metadata';
+      if (v.posterUrl) el.poster = v.posterUrl;
+      if (v.portrait) box.classList.add('portrait');
+      box.appendChild(el);
+      return true;
+    }
+    return false;
+  }
+
+  // 特典動画（設定があるものだけ表示）
+  var bonus = (Array.isArray(cfg.bonus) ? cfg.bonus : []).filter(function (b) { return b && (b.youtubeId || b.vimeoId || b.mp4Url); });
+  if (bonus.length > 0) {
+    $('bonusCard').classList.remove('hidden');
+    text('bonusTitle', cfg.bonusTitle || '特典動画');
+    bonus.forEach(function (b) {
+      var item = document.createElement('div'); item.className = 'bonus-item';
+      var h = document.createElement('h3'); h.textContent = b.title || '特典動画'; item.appendChild(h);
+      var vb = document.createElement('div'); vb.className = 'video'; item.appendChild(vb);
+      buildVideo(b, vb, b.title);
+      $('bonusList').appendChild(item);
+    });
+  }
+
   var v = cfg.video || {};
   var box = $('video');
-  if (v.youtubeId) {
-    var yt = document.createElement('iframe');
-    yt.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.youtubeId) + '?rel=0&playsinline=1';
-    yt.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
-    yt.allowFullscreen = true;
-    yt.title = cfg.title || '講義動画';
-    box.appendChild(yt);
-  } else if (v.vimeoId) {
-    var vm = document.createElement('iframe');
-    vm.src = 'https://player.vimeo.com/video/' + encodeURIComponent(v.vimeoId) + '?dnt=1&playsinline=1';
-    vm.allow = 'autoplay; fullscreen; picture-in-picture';
-    vm.allowFullscreen = true;
-    vm.title = cfg.title || '講義動画';
-    box.appendChild(vm);
-  } else if (v.mp4Url) {
-    var el = document.createElement('video');
-    el.src = v.mp4Url;
-    el.controls = true;
-    el.playsInline = true;
-    el.preload = 'metadata';
-    if (v.posterUrl) el.poster = v.posterUrl;
-    if (v.portrait) box.classList.add('portrait');
-    box.appendChild(el);
-  } else {
-    box.classList.add('hidden');
-  }
+  if (!buildVideo(v, box, cfg.title || '講義動画')) box.classList.add('hidden');
 
   // 見どころ
   var points = Array.isArray(cfg.points) ? cfg.points.filter(Boolean) : [];
