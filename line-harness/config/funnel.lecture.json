@@ -1,19 +1,33 @@
 {
   "$comment": "LINE2（リクさん・講義 → 個別相談会）の定義。apply.mjs --config=config/funnel.lecture.json で反映。messages は config/messages/lecture/ を参照。",
   "messagesDir": "lecture",
-
   "autoApprove": true,
   "thanksMaxAgeMinutes": 180,
-  "prevDay": { "time": "19:00", "cutoffTime": "22:00" },
-  "sameDay": { "minutesBefore": 120 },
+  "prevDay": {
+    "time": "19:00",
+    "cutoffTime": "22:00"
+  },
+  "sameDay": {
+    "minutesBefore": 120
+  },
   "lookaheadDays": 60,
-
   "tags": [
-    { "key": "watched",   "name": "講義_視聴ページを開いた", "color": "#3B82F6" },
-    { "key": "applied",   "name": "講義_相談会申込",         "color": "#F59E0B" },
-    { "key": "confirmed", "name": "講義_相談会予約確定",     "color": "#10B981" }
+    {
+      "key": "watched",
+      "name": "講義_視聴ページを開いた",
+      "color": "#3B82F6"
+    },
+    {
+      "key": "applied",
+      "name": "講義_相談会申込",
+      "color": "#F59E0B"
+    },
+    {
+      "key": "confirmed",
+      "name": "講義_相談会予約確定",
+      "color": "#10B981"
+    }
   ],
-
   "trackedLinks": {
     "lecturePage": {
       "name": "講義動画ページ",
@@ -21,25 +35,102 @@
       "tag": "watched"
     }
   },
-
   "forms": {
     "apply": {
       "name": "個別相談会 申込アンケート",
-      "description": "講義をご覧いただきありがとうございます。個別相談会のご希望を教えてください（1分で終わります）。",
+      "description": "講義をご覧いただきありがとうございます。個別相談会のご希望を教えてください。",
       "fields": [
-        { "name": "full_name", "label": "お名前", "type": "text", "required": true, "placeholder": "山田 花子" },
-        { "name": "situation", "label": "今のお悩みに一番近いもの", "type": "radio", "required": true,
-          "options": ["【要差し替え】選択肢1", "【要差し替え】選択肢2", "【要差し替え】選択肢3", "その他"] },
-        { "name": "goal", "label": "相談会で一番聞きたいこと", "type": "textarea", "required": false, "placeholder": "自由にどうぞ" },
-        { "name": "preferred", "label": "都合のよい時間帯（複数可）", "type": "checkbox", "required": true,
-          "options": ["平日 午前", "平日 午後", "平日 夜", "土曜"] }
+        {
+          "name": "full_name",
+          "label": "お名前",
+          "type": "text",
+          "required": true,
+          "placeholder": "お名前を入力"
+        },
+        {
+          "name": "gender",
+          "label": "性別",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "女性",
+            "男性",
+            "未回答"
+          ]
+        },
+        {
+          "name": "age",
+          "label": "ご年齢",
+          "type": "number",
+          "required": true,
+          "placeholder": "ご年齢を入力"
+        },
+        {
+          "name": "email",
+          "label": "メールアドレス",
+          "type": "email",
+          "required": true,
+          "placeholder": "メールアドレスを入力"
+        },
+        {
+          "name": "phone",
+          "label": "電話番号",
+          "type": "tel",
+          "required": true,
+          "placeholder": "電話番号を入力"
+        },
+        {
+          "name": "job",
+          "label": "ご職業",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "会社員",
+            "公務員",
+            "自営業・経営者",
+            "パート・アルバイト",
+            "主婦・主夫",
+            "学生",
+            "その他"
+          ]
+        },
+        {
+          "name": "situation",
+          "label": "今のお悩みに一番近いもの",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "【要差し替え】選択肢1",
+            "【要差し替え】選択肢2",
+            "【要差し替え】選択肢3",
+            "その他"
+          ]
+        },
+        {
+          "name": "goal",
+          "label": "相談会で一番聞きたいこと",
+          "type": "textarea",
+          "required": false,
+          "placeholder": "自由にどうぞ"
+        },
+        {
+          "name": "preferred",
+          "label": "都合のよい時間帯（複数可）",
+          "type": "checkbox",
+          "required": true,
+          "options": [
+            "平日 午前",
+            "平日 午後",
+            "平日 夜",
+            "土曜"
+          ]
+        }
       ],
       "onSubmitTag": "applied",
       "onSubmitMessageFile": "apply-thanks.txt",
       "saveToMetadata": true
     }
   },
-
   "scenarios": {
     "drip": {
       "name": "講義_友だち追加ステップ",
@@ -47,12 +138,41 @@
       "triggerType": "friend_add",
       "deliveryMode": "absolute_time",
       "steps": [
-        { "type": "text", "file": "drip-00-welcome.txt",   "offsetDays": 0, "deliveryTime": "00:00",
-          "$comment": "00:00 は『登録時刻が過ぎているので即時』の意味（absolute_time は過去時刻を今に丸める）" },
-        { "type": "text", "file": "drip-01-highlights.txt", "offsetDays": 0, "deliveryTime": "21:00", "skipIfTag": "applied" },
-        { "type": "text", "file": "drip-02-education.txt",  "offsetDays": 1, "deliveryTime": "08:00", "skipIfTag": "applied" },
-        { "type": "text", "file": "drip-03-deadline.txt",   "offsetDays": 1, "deliveryTime": "20:00", "skipIfTag": "applied" },
-        { "type": "text", "file": "drip-04-lastcall.txt",   "offsetDays": 2, "deliveryTime": "20:00", "skipIfTag": "applied" }
+        {
+          "type": "text",
+          "file": "drip-00-welcome.txt",
+          "offsetDays": 0,
+          "deliveryTime": "00:00",
+          "$comment": "00:00 は『登録時刻が過ぎているので即時』の意味（absolute_time は過去時刻を今に丸める）"
+        },
+        {
+          "type": "text",
+          "file": "drip-01-highlights.txt",
+          "offsetDays": 0,
+          "deliveryTime": "21:00",
+          "skipIfTag": "applied"
+        },
+        {
+          "type": "text",
+          "file": "drip-02-education.txt",
+          "offsetDays": 1,
+          "deliveryTime": "08:00",
+          "skipIfTag": "applied"
+        },
+        {
+          "type": "text",
+          "file": "drip-03-deadline.txt",
+          "offsetDays": 1,
+          "deliveryTime": "20:00",
+          "skipIfTag": "applied"
+        },
+        {
+          "type": "text",
+          "file": "drip-04-lastcall.txt",
+          "offsetDays": 2,
+          "deliveryTime": "20:00",
+          "skipIfTag": "applied"
+        }
       ]
     },
     "applied": {
@@ -62,8 +182,17 @@
       "triggerTag": "applied",
       "deliveryMode": "relative",
       "steps": [
-        { "type": "text", "file": "applied-01-booking.txt",  "delayMinutes": 0 },
-        { "type": "text", "file": "applied-02-reminder.txt", "delayMinutes": 1440, "skipIfTag": "confirmed" }
+        {
+          "type": "text",
+          "file": "applied-01-booking.txt",
+          "delayMinutes": 0
+        },
+        {
+          "type": "text",
+          "file": "applied-02-reminder.txt",
+          "delayMinutes": 1440,
+          "skipIfTag": "confirmed"
+        }
       ]
     },
     "thanks": {
@@ -72,7 +201,11 @@
       "triggerType": "manual",
       "deliveryMode": "relative",
       "steps": [
-        { "type": "text", "file": "booking-01.txt", "delayMinutes": 0 }
+        {
+          "type": "text",
+          "file": "booking-01.txt",
+          "delayMinutes": 0
+        }
       ]
     },
     "reschedule": {
@@ -81,7 +214,11 @@
       "triggerType": "manual",
       "deliveryMode": "relative",
       "steps": [
-        { "type": "text", "file": "reschedule-01.txt", "delayMinutes": 0 }
+        {
+          "type": "text",
+          "file": "reschedule-01.txt",
+          "delayMinutes": 0
+        }
       ]
     },
     "prevday": {
@@ -90,7 +227,12 @@
       "triggerType": "manual",
       "deliveryMode": "absolute_time",
       "steps": [
-        { "type": "text", "file": "prevday-01.txt", "offsetDays": 0, "deliveryTime": "19:00" }
+        {
+          "type": "text",
+          "file": "prevday-01.txt",
+          "offsetDays": 0,
+          "deliveryTime": "19:00"
+        }
       ]
     },
     "sameday": {
@@ -99,11 +241,14 @@
       "triggerType": "manual",
       "deliveryMode": "relative",
       "steps": [
-        { "type": "text", "file": "sameday-01.txt", "delayMinutes": 0 }
+        {
+          "type": "text",
+          "file": "sameday-01.txt",
+          "delayMinutes": 0
+        }
       ]
     }
   },
-
   "booking": {
     "menu": {
       "name": "個別相談会（オンライン・60分）",
@@ -117,17 +262,56 @@
     },
     "$staffComment": "営業担当は1人1行。availabilityRules を担当者に書けばその人だけの受付時間になる（無ければ下の共通設定）。名前は assets.json の staffMeetingUrls のキーと一致させる",
     "staff": [
-      { "name": "徳原", "display_name": "徳原さん", "role": "個別相談 担当", "sort_order": 1 },
-      { "name": "池端", "display_name": "池端さん", "role": "個別相談 担当", "sort_order": 2 },
-      { "name": "重田", "display_name": "重田さん", "role": "個別相談 担当", "sort_order": 3 }
+      {
+        "name": "徳原",
+        "display_name": "徳原さん",
+        "role": "個別相談 担当",
+        "sort_order": 1
+      },
+      {
+        "name": "池端",
+        "display_name": "池端さん",
+        "role": "個別相談 担当",
+        "sort_order": 2
+      },
+      {
+        "name": "重田",
+        "display_name": "重田さん",
+        "role": "個別相談 担当",
+        "sort_order": 3
+      }
     ],
     "availabilityRules": [
-      { "weekday": 1, "start_time": "10:00", "end_time": "21:00" },
-      { "weekday": 2, "start_time": "10:00", "end_time": "21:00" },
-      { "weekday": 3, "start_time": "10:00", "end_time": "21:00" },
-      { "weekday": 4, "start_time": "10:00", "end_time": "21:00" },
-      { "weekday": 5, "start_time": "10:00", "end_time": "21:00" },
-      { "weekday": 6, "start_time": "10:00", "end_time": "18:00" }
+      {
+        "weekday": 1,
+        "start_time": "10:00",
+        "end_time": "21:00"
+      },
+      {
+        "weekday": 2,
+        "start_time": "10:00",
+        "end_time": "21:00"
+      },
+      {
+        "weekday": 3,
+        "start_time": "10:00",
+        "end_time": "21:00"
+      },
+      {
+        "weekday": 4,
+        "start_time": "10:00",
+        "end_time": "21:00"
+      },
+      {
+        "weekday": 5,
+        "start_time": "10:00",
+        "end_time": "21:00"
+      },
+      {
+        "weekday": 6,
+        "start_time": "10:00",
+        "end_time": "18:00"
+      }
     ]
   }
 }
