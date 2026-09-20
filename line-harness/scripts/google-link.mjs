@@ -6,6 +6,7 @@
 //   node scripts/google-link.mjs --env=.env.lecture              全員分の状態を表示（リンクは発行しない）
 //   node scripts/google-link.mjs --env=.env.lecture --staff=徳原  徳原さんのリンクを発行
 //   node scripts/google-link.mjs --env=.env.lecture --all         未接続の全員分を発行
+//   ... --long                                                    短縮せず Google の長い URL をそのまま表示
 import { resolve } from 'node:path';
 import { loadEnv, requireEnv, createApi, parseArgs, ApiError, ROOT_DIR } from './lib.mjs';
 
@@ -38,6 +39,25 @@ export async function issueLink(api, accountId, staffId) {
     query: { account_id: accountId },
   });
   return res?.authorization_url ?? '(dry-run)';
+}
+
+const SHORT_LINK_PREFIX = 'gcal-connect:';
+
+/**
+ * 長い Google の許可 URL を、L Harness のトラッキングリンク（短縮 URL）に包む。
+ * 通常のブラウザで開くと元の URL へそのままリダイレクトされる。
+ * 以前に同じ担当者用に作った短縮リンクは消してから作る（10分で失効するため残す意味が無い）。
+ */
+export async function shortenLink(api, accountId, staffName, longUrl) {
+  const name = `${SHORT_LINK_PREFIX}${staffName}`;
+  const existing = (await api('GET', '/api/tracked-links')).data ?? [];
+  for (const old of existing.filter((l) => l.name === name)) {
+    await api('DELETE', `/api/tracked-links/${old.id}`);
+  }
+  const created = await api('POST', '/api/tracked-links', {
+    body: { name, originalUrl: longUrl, lineAccountId: accountId },
+  });
+  return created?.data?.trackingUrl ?? longUrl;
 }
 
 const isMain = process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href;
@@ -75,10 +95,13 @@ if (isMain) {
       process.exit(0);
     }
     console.log('\n本人に送る接続リンク（有効期限 10 分・本人の Google アカウントで許可してもらう）:');
+    const longForm = args.has('long');
     for (const s of targets) {
       const url = await issueLink(api, accountId, s.id);
-      console.log(`\n■ ${s.name}\n${url}`);
+      const shown = longForm ? url : await shortenLink(api, accountId, s.name, url);
+      console.log(`\n■ ${s.name}\n${shown}`);
     }
+    console.log('\n※ 必ず Chrome や Safari などの通常のブラウザで開いてもらう（LINE のトーク内で開くと Google が拒否することがある）');
     if (staff.length > 1 && targets.length === 1) {
       console.log('\n※ 他の人のリンクを同時に発行したいときは --all');
     }

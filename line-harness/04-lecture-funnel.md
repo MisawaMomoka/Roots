@@ -133,7 +133,9 @@ node scripts/google-link.mjs --env=.env.lecture --staff=徳原   # 徳原さん�
 node scripts/google-link.mjs --env=.env.lecture --all          # 未接続の全員分を発行
 ```
 
-- リンクは L Harness の仕様で **10分**で期限切れになる。送ってすぐ開いてもらう。切れたら同じコマンドで発行し直す
+- 出てくるのは `https://roots-line.re-tro.workers.dev/t/XXXXXXX` の短い URL（L Harness のトラッキングリンクで Google の長い URL を包んでいる）。`--long` を付けると元の長い URL
+- リンクは L Harness の仕様で **10分**で期限切れになる。送ってすぐ開いてもらう。切れたら同じコマンドで発行し直す（古い短縮リンクは自動で消える）
+- **LINE のトーク内ではなく、Chrome や Safari で開いてもらう**（LINE 内ブラウザだと Google が拒否することがある）
 - 本人は、そのリンクを開いて **自分の Google アカウント**を選び「許可」を押すだけ。その後、管理画面のログイン画面に飛ばされるが、接続はその時点で完了しているので閉じてよい
 - 完了したかは、同じコマンドを打ち直して「接続済み」に変わっているかで確認する
 Google 側の OAuth 同意画面が「テスト」状態のうちは、「対象 → テストユーザー」に**担当者3人全員のメールアドレス**を入れておく。
