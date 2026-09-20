@@ -295,8 +295,9 @@ export async function ensureBooking(api, booking, tagIds, accountId, log) {
     await api('PUT', `/api/booking/admin/staff/${staff.id}/menus`, {
       query: q, body: { menus: [{ menu_id: menu.id, is_offered: true }] },
     });
+    // 担当者ごとの受付時間（staff[].availabilityRules）があればそれを、無ければ共通の booking.availabilityRules を使う
     await api('PUT', `/api/booking/admin/staff/${staff.id}/availability-rules`, {
-      query: q, body: { rules: booking.availabilityRules },
+      query: q, body: { rules: s.availabilityRules ?? booking.availabilityRules },
     });
     log(`  menus/availability ~ ${s.name}`);
   }

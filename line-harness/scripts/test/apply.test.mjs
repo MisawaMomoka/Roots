@@ -167,3 +167,21 @@ test('講義設定 applyAll: タグ → フォーム → リンク → シナリ
   // 2回目: フォームは内容比較をせず PUT で同期する（1件）。それ以外の書き込みは無い
   assert.deepEqual(writes.slice(before), ['PUT /api/forms/' + state.forms[0].id]);
 });
+
+test('ensureBooking: 担当者ごとの受付時間があればそれを使い、無ければ共通設定を使う', async () => {
+  const { ensureBooking } = await import('../apply.mjs');
+  const calls = [];
+  const api = async (method, path, { body } = {}) => {
+    calls.push({ method, path, body });
+    if (path === '/api/booking/admin/menus' && method === 'GET') return { menus: [] };
+    if (path === '/api/booking/admin/menus') return { id: 'menu-1' };
+    if (path === '/api/booking/admin/staff' && method === 'GET') return { staff: [] };
+    if (path === '/api/booking/admin/staff') return { id: `st-${calls.length}` };
+    return { ok: true };
+  };
+  await ensureBooking(api, lecture.booking, {}, 'acc2', () => {});
+  const rules = calls.filter((c) => c.path.endsWith('/availability-rules')).map((c) => c.body.rules);
+  assert.equal(rules.length, 3);
+  assert.deepEqual(rules[0], lecture.booking.availabilityRules);
+  assert.deepEqual(rules[2], lecture.booking.staff[2].availabilityRules);
+});

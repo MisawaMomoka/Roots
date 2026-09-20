@@ -110,6 +110,20 @@ B の「誰が開いたか」は、配信文のリンクを L Harness のトラ�
 
 ---
 
+## 営業担当が複数いる場合
+
+予約は「担当者ごとに受付時間と Google カレンダーを持つ」設計。お客さまは予約ページで **担当者を1人選んでから**日時を選ぶ（「おまかせ」で自動振り分けする機能は無い）。
+
+| 設定 | 場所 |
+|---|---|
+| 担当者の一覧（名前・表示順） | `config/funnel.lecture.json` の `booking.staff`。1人1行 |
+| 受付時間 | 共通なら `booking.availabilityRules`。人によって違うなら、その人の行に `availabilityRules` を書く |
+| Zoom などの固定 URL | `config/assets.json` の `staffMeetingUrls`。キーは `staff[].name` と一致させる |
+| Google カレンダー接続 | 管理画面 → 予約管理 → スタッフ → 各担当者 →「Googleアカウントで接続」。**本人の Google アカウントで**許可する（3人なら3回） |
+
+反映は `pnpm apply:lecture:booking`（担当者の追加・受付時間の更新は何度でも上書きできる）。
+Google 側の OAuth 同意画面が「テスト」状態のうちは、「対象 → テストユーザー」に**担当者3人全員のメールアドレス**を入れておく。
+
 ## セットアップ順（LINE2）
 
 1. 公式LINE2・LINE Login チャネル2・LIFF2 を作り、管理画面「LINEアカウント」に追加する（チャットで案内済みの手順）
