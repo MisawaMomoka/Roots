@@ -119,9 +119,23 @@ B の「誰が開いたか」は、配信文のリンクを L Harness のトラ�
 | 担当者の一覧（名前・表示順） | `config/funnel.lecture.json` の `booking.staff`。1人1行 |
 | 受付時間 | 共通なら `booking.availabilityRules`。人によって違うなら、その人の行に `availabilityRules` を書く |
 | Zoom などの固定 URL | `config/assets.json` の `staffMeetingUrls`。キーは `staff[].name` と一致させる |
-| Google カレンダー接続 | 管理画面 → 予約管理 → スタッフ → 各担当者 →「Googleアカウントで接続」。**本人の Google アカウントで**許可する（3人なら3回） |
+| Google カレンダー接続 | **本人に接続リンクを送る**（下記）。または管理画面 → 予約管理 → スタッフ → 各担当者 →「Googleアカウントで接続」を本人の Google アカウントで |
 
 反映は `pnpm apply:lecture:booking`（担当者の追加・受付時間の更新は何度でも上書きできる）。
+
+### 担当者本人にカレンダー接続をしてもらう（接続リンクの発行）
+
+管理画面にログインさせずに済むよう、担当者ごとの「接続リンク」を発行して本人に送る。
+
+```powershell
+node scripts/google-link.mjs --env=.env.lecture                # 全員の接続状態を見る
+node scripts/google-link.mjs --env=.env.lecture --staff=徳原   # 徳原さんのリンクを発行
+node scripts/google-link.mjs --env=.env.lecture --all          # 未接続の全員分を発行
+```
+
+- リンクは L Harness の仕様で **10分**で期限切れになる。送ってすぐ開いてもらう。切れたら同じコマンドで発行し直す
+- 本人は、そのリンクを開いて **自分の Google アカウント**を選び「許可」を押すだけ。その後、管理画面のログイン画面に飛ばされるが、接続はその時点で完了しているので閉じてよい
+- 完了したかは、同じコマンドを打ち直して「接続済み」に変わっているかで確認する
 Google 側の OAuth 同意画面が「テスト」状態のうちは、「対象 → テストユーザー」に**担当者3人全員のメールアドレス**を入れておく。
 
 ## セットアップ順（LINE2）
