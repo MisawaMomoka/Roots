@@ -179,9 +179,14 @@ test('ensureBooking: 担当者ごとの受付時間があればそれを使い�
     if (path === '/api/booking/admin/staff') return { id: `st-${calls.length}` };
     return { ok: true };
   };
-  await ensureBooking(api, lecture.booking, {}, 'acc2', () => {});
+  const own = [{ weekday: 2, start_time: '13:00', end_time: '21:00' }];
+  const booking = {
+    ...lecture.booking,
+    staff: [...lecture.booking.staff.slice(0, 2), { ...lecture.booking.staff[2], availabilityRules: own }],
+  };
+  await ensureBooking(api, booking, {}, 'acc2', () => {});
   const rules = calls.filter((c) => c.path.endsWith('/availability-rules')).map((c) => c.body.rules);
   assert.equal(rules.length, 3);
   assert.deepEqual(rules[0], lecture.booking.availabilityRules);
-  assert.deepEqual(rules[2], lecture.booking.staff[2].availabilityRules);
+  assert.deepEqual(rules[2], own);
 });
