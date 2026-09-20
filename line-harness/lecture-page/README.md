@@ -24,6 +24,9 @@ LINE2 配信文 ── トラッキングリンク ──▶ このページ（�
 
 YouTube は「限定公開」にし、「埋め込みを許可」をオンにする。
 
+`thumb.jpg`（1600×900・16:9）は LINE1 の誘導カードに使うサムネイル。このフォルダごと配備すると
+`https://roots-lecture.pages.dev/thumb.jpg` で参照できる（`.env.line1` の `THUMB_URL`）。
+
 ## 2. Cloudflare Pages に置く（初回）
 
 同じ Cloudflare アカウント（Retro）に、管理画面とは別の Pages プロジェクトを作る。
