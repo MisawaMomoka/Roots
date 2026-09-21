@@ -74,3 +74,5 @@
 1. `01-setup.md` の §1 から順に進めて、管理画面にログインできるところまで行く
 2. 動画2本（予約直後・前日）を書き出して R2 か Cloudflare Stream に置き、`config/assets.json` を作る
 3. `pnpm apply` → テスト予約 → 3セット受信を確認する
+
+- `worker-fork/` … L Harness 本体の固定メッセージ（予約受付・確定・標準リマインド）とカレンダーのタイトルを差し替えて配備する（GitHub Actions `deploy-worker.yml` を手動実行）。手順は `worker-fork/README.md`。

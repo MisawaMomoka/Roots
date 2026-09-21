@@ -376,7 +376,9 @@
     var data = Object.assign({}, pending, { booking_datetime: label(chosen.date, chosen.start), booking_staff: chosen.staffName });
     // カレンダーの予定メモ（L Harness は customer_note を「メモ:」としてそのまま Google カレンダーに書く）
     var src = sourceCode();
-    var noteLines = ['[申込者情報]'];
+    // 1 行目「件名: 姓 名さん：流入元｜メニュー名」は、改造版 Worker がカレンダーの予定タイトルに使う（メモからは除かれる）
+    var fullName = [pending.last_name, pending.first_name].filter(Boolean).join(' ');
+    var noteLines = ['件名: ' + (fullName ? fullName + 'さん' : 'お客様') + '：' + sourceLabel(src) + '｜' + (cfg.menuName || '個別診断会'), '[申込者情報]'];
     fields.forEach(function (f) { var v = pending[f.name]; noteLines.push((f.label || f.name) + '：' + (Array.isArray(v) ? v.join('、') : (v || '—'))); });
     noteLines.push('流入元：' + sourceLabel(src) + (src ? '（' + src + '）' : ''));
     noteLines.push('希望日時：' + label(chosen.date, chosen.start));

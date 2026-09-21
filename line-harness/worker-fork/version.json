@@ -1,0 +1,5 @@
+{
+  "$comment": "配備する L Harness のバージョン。上げるときは patch.mjs --check で全アンカーが一致するか確認してから",
+  "version": "0.24.1",
+  "bundleUrl": "https://github.com/Shudesu/line-harness-oss/releases/download/v0.24.1/bundle.tar.gz"
+}
