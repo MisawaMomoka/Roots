@@ -5,3 +5,4 @@
 .mcp.json
 config/assets.json
 node_modules/
+*.log

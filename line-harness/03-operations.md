@@ -72,7 +72,30 @@ pnpm apply:booking           # 予約メニュー・担当者・受付時間も�
 */5 * * * * cd /path/to/Roots/line-harness && /usr/local/bin/node scripts/sync-bookings.mjs --env=.env.lecture --config=config/funnel.lecture.json >> /var/log/roots-line-sync-lecture.log 2>&1
 ```
 
-Windows で常時起動の PC に置く場合は「タスク スケジューラ」で5分おきに `node.exe scripts\sync-bookings.mjs` を実行する（作業フォルダを `line-harness` にする）。LINE2 用は引数付きでもう1件登録する。
+### 選択肢A'：Windows のタスク スケジューラ（常時起動の PC 限定）
+
+PC がスリープ・シャットダウンしている間は動かない（起動後にまとめて 1 回だけ追いつく）。常時起動できないなら選択肢 B にする。
+PowerShell（1 行ずつ）：
+
+```powershell
+cd C:\Users\momoi\Roots-repo\line-harness
+$dir = (Get-Location).Path
+$action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c node scripts\sync-bookings.mjs --env=.env.lecture --config=config/funnel.lecture.json >> sync-lecture.log 2>&1" -WorkingDirectory $dir
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5) -RepetitionDuration (New-TimeSpan -Days 3650)
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 5) -MultipleInstances IgnoreNew
+Register-ScheduledTask -TaskName "roots-line-sync-lecture" -Action $action -Trigger $trigger -Settings $settings -Description "LINE2 予約の自動処理（5分ごと）"
+```
+
+確認・操作：
+
+```powershell
+Start-ScheduledTask -TaskName roots-line-sync-lecture          # 今すぐ 1 回動かす
+Get-Content sync-lecture.log -Tail 20                           # 直近のログ
+Get-ScheduledTaskInfo -TaskName roots-line-sync-lecture         # 最終実行・次回実行・結果コード（0 が正常）
+Unregister-ScheduledTask -TaskName roots-line-sync-lecture -Confirm:$false   # 止める
+```
+
+ログ `sync-lecture.log` は `.gitignore` 済み。
 
 ### 選択肢B：GitHub Actions（5分間隔だが遅延10分以上のことがある）
 
