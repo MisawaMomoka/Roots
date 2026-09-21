@@ -156,6 +156,7 @@
 
   // ---------- 空き枠 ----------
   var menuId = null, byDate = {}, rangeFrom, rangeTo;
+  var menuName = ''; // 管理画面のメニュー名（カレンダーの件名に使う）
   var today = jstToday(), view = { y: today.y, m: today.m };
   var chosen = null; // { date, start, staffId, staffName }
 
@@ -164,7 +165,7 @@
       var menus = j.menus || [];
       var m = menus.find(function (x) { return x.name === cfg.menuName; }) || menus[0];
       if (!m) throw new Error('menu');
-      menuId = m.id;
+      menuId = m.id; menuName = m.name || cfg.menuName || '';
     });
   }
   function loadAvailability() {
@@ -378,7 +379,7 @@
     var src = sourceCode();
     // 1 行目「件名: 姓 名さん：流入元｜メニュー名」は、改造版 Worker がカレンダーの予定タイトルに使う（メモからは除かれる）
     var fullName = [pending.last_name, pending.first_name].filter(Boolean).join(' ');
-    var noteLines = ['件名: ' + (fullName ? fullName + 'さん' : 'お客様') + '：' + sourceLabel(src) + '｜' + (cfg.menuName || '個別診断会'), '[申込者情報]'];
+    var noteLines = ['件名: ' + (fullName ? fullName + 'さん' : 'お客様') + '：' + sourceLabel(src) + '｜' + (menuName || cfg.menuName || '個別診断会'), '[申込者情報]'];
     fields.forEach(function (f) { var v = pending[f.name]; noteLines.push((f.label || f.name) + '：' + (Array.isArray(v) ? v.join('、') : (v || '—'))); });
     noteLines.push('流入元：' + sourceLabel(src) + (src ? '（' + src + '）' : ''));
     noteLines.push('希望日時：' + label(chosen.date, chosen.start));
