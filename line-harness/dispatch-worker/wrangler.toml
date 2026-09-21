@@ -1,0 +1,16 @@
+# GitHub Actions の定期実行（schedule）が動かないときの代替。
+# Cloudflare の cron（5 分おき）から GitHub のワークフロー line-sync-lecture.yml を起動する。
+# 手順は ../03-operations.md §3 選択肢B'。
+name = "roots-line-sync-dispatch"
+main = "src/index.mjs"
+compatibility_date = "2026-09-01"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+GITHUB_OWNER = "MisawaMomoka"
+GITHUB_REPO = "Roots"
+WORKFLOW_FILE = "line-sync-lecture.yml"
+GIT_REF = "claude/line-official-account-setup-darox0"
+# GITHUB_TOKEN は `npx wrangler secret put GITHUB_TOKEN` で登録（fine-grained PAT、Actions: Read and write）

@@ -119,6 +119,23 @@ GitHub の混雑時は実行が 10 分以上遅れることがある（お礼・
 また、公開リポジトリでは **60 日間コミットがないと schedule が自動停止**する（Actions タブに警告が出る）。止まったら「Enable workflow」で再開する。
 `config/assets.json` は `.gitignore` 済みなので、Meet リンクを変えたら Secret `ASSETS_JSON` も更新する。
 
+### 選択肢B'：Cloudflare の cron から GitHub Actions を起動する（schedule が動かないときの代替・採用中）
+
+GitHub の schedule は「ワークフローファイルを最後にコミットした GitHub ユーザー」の権限で動く仕様があり、登録されないことがある。
+その場合は `dispatch-worker/`（Cloudflare Worker）を配備し、5 分おきに GitHub の `workflow_dispatch` API でワークフローを起動する。実行の実体・ログは引き続き GitHub Actions 側。
+
+1. GitHub のトークンを発行：https://github.com/settings/personal-access-tokens/new → Token name 任意（例 `roots-line-sync`）→ Expiration は 1 年 → Repository access「Only select repositories」→ `Roots` → Permissions → Repository permissions → **Actions: Read and write** → Generate token → 表示された `github_pat_…` をコピー（この画面を閉じると二度と見られない）
+2. PowerShell（1 行ずつ）：
+
+```powershell
+cd C:\Users\momoi\Roots-repo\line-harness\dispatch-worker
+npx wrangler secret put GITHUB_TOKEN        # 貼り付けて Enter（画面には表示されない）
+npx wrangler deploy
+```
+
+3. 5〜10 分後に GitHub の Actions タブを見る。「line-harness sync (lecture)」の実行が 5 分おきに増えていれば OK（Event は `workflow_dispatch`、実行者はトークンの持ち主）。
+4. 止めるとき：`npx wrangler delete`（同じフォルダで）。トークンの期限が切れたら 1 → 2 の `secret put` だけやり直す。
+
 ### 選択肢C：L Harness プラグイン（Cloudflare Worker の cron）に移植
 
 L Harness には別 Worker として動かす「プラグイン」の仕組みがある（`pnpm plugin:create`）。
