@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>個別相談会 申し込み</title>
+<meta name="description" content="個別相談会の日程選択と申込フォーム">
+<!--
+  申し込みページ（2ページ目）：日程の選択（L Harness の空き枠）→ 情報入力（L Harness のフォーム項目）→ 送信
+  送信すると (1) フォーム回答が L Harness に保存され、タグ「講義_相談会申込」が付く (2) 選んだ日時で予約リクエストが入る
+  本人確認は LIFF のログイン情報。設定は <script id="config"> の JSON だけ。手順は README.md
+-->
+<script id="config" type="application/json">
+{
+  "liffId": "2011653383-ta1zojXE",
+  "accountLiffId": "2011653383-oiECpx5P",
+  "apiUrl": "https://roots-line.re-tro.workers.dev",
+  "formId": "dc3fab6a-8123-4b2d-adb3-bad87bc226b7",
+  "menuName": "個別相談会（オンライン・60分）",
+
+  "title": "やせ習慣1Day講義 個別相談会 申し込みページ",
+  "intro": "LINE登録者限定で、1回60分の無料個別相談会を開催しています。\n下記のカレンダーより、ご希望の日時を選択しご予約ください。",
+  "daysAhead": 28,
+  "submitLabel": "申込内容を確認",
+  "confirmLabel": "この内容で申し込む",
+  "thanksTitle": "お申し込みありがとうございます",
+  "thanksBody": "日程の確定のご連絡を LINE にお送りします。LINE をご確認ください。"
+}
+</script>
+<style>
+  :root { --bg: #fff; --text: #1f2937; --muted: #6b7280; --pink: #ee6a9a; --orange: #f5a623; --orange-dark: #d98c0a; --border: #e5e7eb; --blue: #1a8fd8; --red: #e53935; --panel: #fdf2f6; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #f6f7f9; color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; line-height: 1.7; }
+  .page { max-width: 560px; margin: 0 auto; background: var(--bg); min-height: 100vh; }
+  header { background: linear-gradient(90deg, #f7b34a, #ee6a9a); color: #fff; text-align: center; padding: 14px 16px; font-weight: 700; font-size: 1.05rem; }
+  main { padding: 16px 16px 48px; }
+  .intro { font-size: .95rem; white-space: pre-line; margin: 0 0 16px; }
+  h2 { font-size: 1rem; border-left: 4px solid var(--pink); padding-left: 8px; margin: 22px 0 10px; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .cal-head button { border: 1px solid var(--border); background: #fff; border-radius: 6px; padding: 6px 10px; font-size: .85rem; cursor: pointer; }
+  .cal-head .ym { font-weight: 700; font-size: 1.05rem; }
+  table.cal { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: .9rem; }
+  table.cal th { background: #f3f4f6; font-weight: 700; padding: 6px 0; }
+  table.cal th.sun, table.cal td.sun .d { color: var(--red); }
+  table.cal th.sat, table.cal td.sat .d { color: var(--blue); }
+  table.cal td { border: 1px solid var(--border); height: 52px; text-align: center; vertical-align: top; padding: 4px 0; }
+  table.cal td.other { color: #c4c7cc; background: #fafafa; }
+  table.cal td .d { display: block; font-weight: 700; }
+  table.cal td .m { display: block; font-size: .95rem; color: var(--pink); }
+  table.cal td.avail { cursor: pointer; }
+  table.cal td.avail:hover { background: var(--panel); }
+  table.cal td.sel { background: var(--panel); outline: 2px solid var(--pink); outline-offset: -2px; }
+  .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .slots button { border: 1px solid var(--border); background: #fff; border-radius: 6px; padding: 10px 0; font-size: .95rem; cursor: pointer; }
+  .slots button.sel { background: var(--pink); color: #fff; border-color: var(--pink); }
+  .chosen { border: 1px solid var(--border); border-radius: 6px; display: flex; }
+  .chosen .k { background: #f3f4f6; padding: 10px 12px; font-weight: 700; width: 72px; }
+  .chosen .v { padding: 10px 12px; flex: 1; }
+  .field { margin: 12px 0; }
+  .field label.t { display: block; font-weight: 700; font-size: .95rem; margin-bottom: 4px; }
+  .req { display: inline-block; background: var(--red); color: #fff; font-size: .7rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .field input[type=text], .field input[type=email], .field input[type=tel], .field input[type=number], .field textarea, .field select { width: 100%; padding: 11px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; background: #fff; color: var(--text); }
+  .field textarea { min-height: 88px; }
+  .opt { display: block; padding: 3px 0; }
+  .opt input { margin-right: 8px; }
+  .help { font-size: .85rem; color: var(--muted); margin: 4px 0 0; }
+  .submit { display: block; width: 100%; background: linear-gradient(180deg, #f7c04a, #f5a623); color: #fff; border: 0; border-bottom: 5px solid var(--orange-dark); border-radius: 6px; padding: 16px; font-size: 1.05rem; font-weight: 700; margin-top: 18px; cursor: pointer; }
+  .submit[disabled] { opacity: .6; cursor: default; }
+  .msg { padding: 12px; border-radius: 8px; margin-top: 12px; }
+  .msg.err { background: #fdecea; color: #b71c1c; }
+  .msg.ok { background: #e8f5e9; color: #1b5e20; }
+  .confirm dl { margin: 0; }
+  .confirm dt { font-weight: 700; margin-top: 8px; }
+  .confirm dd { margin: 0; white-space: pre-line; }
+  .back { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 10px; width: 100%; margin-top: 8px; cursor: pointer; }
+  footer { text-align: center; font-size: .75rem; color: var(--muted); padding: 16px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header id="title"></header>
+  <main>
+    <p class="intro" id="intro"></p>
+    <div id="status" class="msg hidden"></div>
+
+    <section id="stepForm">
+      <h2>日程の選択</h2>
+      <div class="cal-head">
+        <button type="button" id="prevM">&lt; 前の月</button>
+        <div class="ym" id="ym"></div>
+        <button type="button" id="nextM">次の月 &gt;</button>
+      </div>
+      <table class="cal">
+        <thead><tr><th class="sun">日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th class="sat">土</th></tr></thead>
+        <tbody id="calBody"></tbody>
+      </table>
+      <p class="help">○ が付いている日をタップすると、時間を選べます。</p>
+      <div class="slots hidden" id="slots"></div>
+
+      <h2>選択した日程</h2>
+      <div class="chosen"><div class="k">日程</div><div class="v" id="chosen">未選択</div></div>
+
+      <h2>情報入力</h2>
+      <form id="form" novalidate>
+        <div id="fields"><p class="help">フォームを読み込んでいます…</p></div>
+        <button class="submit" id="submit" type="submit"></button>
+        <div id="formMsg"></div>
+      </form>
+    </section>
+
+    <section id="stepConfirm" class="hidden confirm">
+      <h2>申込内容の確認</h2>
+      <dl id="confirmList"></dl>
+      <button class="submit" id="confirmBtn" type="button"></button>
+      <button class="back" id="backBtn" type="button">戻って修正する</button>
+      <div id="confirmMsg"></div>
+    </section>
+
+    <section id="stepDone" class="hidden">
+      <h2 id="thanksTitle"></h2>
+      <p id="thanksBody"></p>
+      <p class="help" id="doneDetail"></p>
+    </section>
+  </main>
+  <footer>© Roots</footer>
+</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+(function () {
+  var cfg; try { cfg = JSON.parse(document.getElementById('config').textContent); } catch (e) { cfg = {}; }
+  var $ = function (id) { return document.getElementById(id); };
+  var text = function (id, v) { $(id).textContent = v || ''; };
+  var api = (cfg.apiUrl || '').replace(/\/+$/, '');
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  var WD = ['日', '月', '火', '水', '木', '金', '土'];
+
+  text('title', cfg.title); text('intro', cfg.intro); text('thanksTitle', cfg.thanksTitle); text('thanksBody', cfg.thanksBody);
+  text('submit', cfg.submitLabel || '申込内容を確認'); text('confirmBtn', cfg.confirmLabel || 'この内容で申し込む');
+
+  function status(kind, t) { var s = $('status'); s.className = 'msg ' + kind; s.textContent = t; s.classList.remove('hidden'); }
+  function fail(t) { status('err', t); $('stepForm').classList.add('hidden'); }
+
+  // ---------- JST の日付ユーティリティ（端末のタイムゾーンに依存しない） ----------
+  function jstToday() { var d = new Date(Date.now() + 9 * 3600000); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate() }; }
+  function ymd(y, m, d) { return y + '-' + pad(m) + '-' + pad(d); }
+  function addDays(s, n) { var p = s.split('-').map(Number); var t = new Date(Date.UTC(p[0], p[1] - 1, p[2] + n)); return ymd(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate()); }
+  function jstIso(dateStr, hhmm) { var p = dateStr.split('-').map(Number), q = hhmm.split(':').map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2], q[0], q[1]) - 9 * 3600000).toISOString(); }
+  function label(dateStr, hhmm) { var p = dateStr.split('-').map(Number); var wd = new Date(Date.UTC(p[0], p[1] - 1, p[2])).getUTCDay(); return p[0] + '年' + p[1] + '月' + p[2] + '日（' + WD[wd] + '）' + hhmm + '〜'; }
+
+  // ---------- 空き枠 ----------
+  var menuId = null, byDate = {}, rangeFrom, rangeTo;
+  var today = jstToday(), view = { y: today.y, m: today.m };
+  var chosen = null; // { date, start, staffId, staffName }
+
+  function loadMenu() {
+    return fetch(api + '/api/liff/booking/menus?liffId=' + encodeURIComponent(cfg.accountLiffId)).then(function (r) { return r.json(); }).then(function (j) {
+      var menus = j.menus || [];
+      var m = menus.find(function (x) { return x.name === cfg.menuName; }) || menus[0];
+      if (!m) throw new Error('menu');
+      menuId = m.id;
+    });
+  }
+  function loadAvailability() {
+    rangeFrom = ymd(today.y, today.m, today.d); rangeTo = addDays(rangeFrom, Math.min(28, Number(cfg.daysAhead) || 28));
+    var u = api + '/api/liff/booking/availability?liffId=' + encodeURIComponent(cfg.accountLiffId) + '&menu_id=' + encodeURIComponent(menuId) + '&from=' + rangeFrom + '&to=' + rangeTo;
+    return fetch(u).then(function (r) { return r.json(); }).then(function (j) {
+      byDate = {};
+      (j.by_staff || []).forEach(function (s) {
+        (s.slots || []).forEach(function (sl) {
+          var key = sl.date; byDate[key] = byDate[key] || {};
+          // 同じ時間に複数の担当者が空いていれば、最初の人に割り当てる（お客さまは担当者を選ばない）
+          if (!byDate[key][sl.start]) byDate[key][sl.start] = { staffId: s.staff_id, staffName: s.display_name, end: sl.end };
+        });
+      });
+    });
+  }
+
+  function renderCalendar() {
+    text('ym', view.y + '年' + view.m + '月');
+    var first = new Date(Date.UTC(view.y, view.m - 1, 1)).getUTCDay();
+    var days = new Date(Date.UTC(view.y, view.m, 0)).getUTCDate();
+    var body = $('calBody'); body.innerHTML = '';
+    var cell = 0, tr = document.createElement('tr');
+    for (var i = 0; i < first; i++) { var td0 = document.createElement('td'); td0.className = 'other'; tr.appendChild(td0); cell++; }
+    for (var d = 1; d <= days; d++) {
+      var key = ymd(view.y, view.m, d), wd = cell % 7;
+      var td = document.createElement('td'); td.className = wd === 0 ? 'sun' : wd === 6 ? 'sat' : '';
+      var n = document.createElement('span'); n.className = 'd'; n.textContent = d; td.appendChild(n);
+      if (byDate[key] && Object.keys(byDate[key]).length) {
+        var mk = document.createElement('span'); mk.className = 'm'; mk.textContent = '○'; td.appendChild(mk);
+        td.classList.add('avail'); td.setAttribute('data-date', key);
+        if (chosen && chosen.date === key) td.classList.add('sel');
+        td.addEventListener('click', function (ev) { showSlots(ev.currentTarget.getAttribute('data-date')); });
+      } else if (key < rangeFrom || key > rangeTo) { td.classList.add('other'); }
+      tr.appendChild(td); cell++;
+      if (cell % 7 === 0) { body.appendChild(tr); tr = document.createElement('tr'); }
+    }
+    while (cell % 7 !== 0) { var tdx = document.createElement('td'); tdx.className = 'other'; tr.appendChild(tdx); cell++; }
+    if (tr.children.length) body.appendChild(tr);
+  }
+  function showSlots(date) {
+    var box = $('slots'); box.innerHTML = ''; box.classList.remove('hidden');
+    Object.keys(byDate[date]).sort().forEach(function (start) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = start;
+      if (chosen && chosen.date === date && chosen.start === start) b.classList.add('sel');
+      b.addEventListener('click', function () {
+        var s = byDate[date][start]; chosen = { date: date, start: start, end: s.end, staffId: s.staffId, staffName: s.staffName };
+        text('chosen', label(date, start)); renderCalendar(); showSlots(date);
+        $('chosen').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      box.appendChild(b);
+    });
+  }
+  $('prevM').addEventListener('click', function () { view.m--; if (view.m < 1) { view.m = 12; view.y--; } renderCalendar(); });
+  $('nextM').addEventListener('click', function () { view.m++; if (view.m > 12) { view.m = 1; view.y++; } renderCalendar(); });
+
+  // ---------- フォーム（項目は L Harness から） ----------
+  var fields = [];
+  function loadForm() {
+    return fetch(api + '/api/forms/' + encodeURIComponent(cfg.formId)).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j || !j.success) throw new Error('form');
+      fields = Array.isArray(j.data.fields) ? j.data.fields : (typeof j.data.fields === 'string' ? JSON.parse(j.data.fields) : []);
+      renderFields(fields);
+    });
+  }
+  function inputFor(f) {
+    var t = f.type || 'text';
+    if (t === 'textarea') { var ta = document.createElement('textarea'); ta.name = f.name; ta.placeholder = f.placeholder || ''; return ta; }
+    if (t === 'select') { var sel = document.createElement('select'); sel.name = f.name; var o0 = document.createElement('option'); o0.value = ''; o0.textContent = '選択してください'; sel.appendChild(o0); (f.options || []).forEach(function (o) { var op = document.createElement('option'); op.value = o; op.textContent = o; sel.appendChild(op); }); return sel; }
+    if (t === 'radio' || t === 'checkbox') { var wrap = document.createElement('div'); (f.options || []).forEach(function (o) { var l = document.createElement('label'); l.className = 'opt'; var i = document.createElement('input'); i.type = t; i.name = f.name; i.value = o; l.appendChild(i); l.appendChild(document.createTextNode(o)); wrap.appendChild(l); }); return wrap; }
+    var inp = document.createElement('input'); inp.type = ['email', 'tel', 'number', 'date'].indexOf(t) >= 0 ? t : 'text'; inp.name = f.name; inp.placeholder = f.placeholder || ''; return inp;
+  }
+  function renderFields(list) {
+    var wrap = $('fields'); wrap.innerHTML = '';
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var div = document.createElement('div'); div.className = 'field';
+      var lab = document.createElement('label'); lab.className = 't'; lab.textContent = f.label || f.name;
+      if (f.required) { var r = document.createElement('span'); r.className = 'req'; r.textContent = '必須'; lab.appendChild(r); }
+      div.appendChild(lab);
+      // "pair" が付いた項目は次の項目と横並び（姓／名、セイ／メイ）
+      if (f.pair && list[i + 1]) {
+        var row = document.createElement('div'); row.className = 'row';
+        row.appendChild(inputFor(f)); row.appendChild(inputFor(list[i + 1])); div.appendChild(row); i++;
+      } else {
+        div.appendChild(inputFor(f));
+      }
+      if (f.help) { var h = document.createElement('p'); h.className = 'help'; h.textContent = f.help; div.appendChild(h); }
+      wrap.appendChild(div);
+    }
+  }
+  function collect() {
+    var data = {}, missing = [], form = $('form');
+    fields.forEach(function (f) {
+      var t = f.type || 'text', v;
+      if (t === 'checkbox') v = Array.prototype.map.call(form.querySelectorAll('input[name="' + f.name + '"]:checked'), function (i) { return i.value; });
+      else if (t === 'radio') { var c = form.querySelector('input[name="' + f.name + '"]:checked'); v = c ? c.value : ''; }
+      else { var el = form.querySelector('[name="' + f.name + '"]'); v = el ? el.value.trim() : ''; }
+      if (f.required && (v === '' || (Array.isArray(v) && v.length === 0))) missing.push(f.label || f.name);
+      data[f.name] = v;
+    });
+    return { data: data, missing: missing };
+  }
+
+  // ---------- LIFF ----------
+  function initLiff() {
+    if (!window.liff || !cfg.liffId) return Promise.reject(new Error('liff'));
+    return liff.init({ liffId: cfg.liffId }).then(function () {
+      if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return new Promise(function () {}); }
+    });
+  }
+
+  var ready = false, pending = null;
+  Promise.all([loadMenu().then(loadAvailability).then(renderCalendar), loadForm(), initLiff()])
+    .then(function () { ready = true; })
+    .catch(function (e) {
+      var m = String(e && e.message || '');
+      fail(m === 'liff' ? 'LINE のログイン情報を確認できませんでした。LINE のトーク内のリンクから開き直してください。'
+        : m === 'menu' ? '予約メニューが見つかりません（管理者に連絡してください）。'
+        : '読み込みに失敗しました。時間をおいて開き直してください。');
+    });
+
+  // ---------- 確認 → 送信 ----------
+  $('form').addEventListener('submit', function (ev) {
+    ev.preventDefault(); if (!ready) return;
+    var c = collect();
+    var m = $('formMsg'); m.className = ''; m.textContent = '';
+    if (!chosen) { m.className = 'msg err'; m.textContent = 'カレンダーから日程を選んでください'; $('calBody').scrollIntoView({ behavior: 'smooth' }); return; }
+    if (c.missing.length) { m.className = 'msg err'; m.textContent = '未入力の項目があります：' + c.missing.join('、'); return; }
+    pending = c.data;
+    var dl = $('confirmList'); dl.innerHTML = '';
+    var add = function (k, v) { var dt = document.createElement('dt'); dt.textContent = k; var dd = document.createElement('dd'); dd.textContent = Array.isArray(v) ? v.join('、') : (v || '—'); dl.appendChild(dt); dl.appendChild(dd); };
+    add('日程', label(chosen.date, chosen.start));
+    fields.forEach(function (f) { add(f.label || f.name, pending[f.name]); });
+    $('stepForm').classList.add('hidden'); $('stepConfirm').classList.remove('hidden'); window.scrollTo(0, 0);
+  });
+  $('backBtn').addEventListener('click', function () { $('stepConfirm').classList.add('hidden'); $('stepForm').classList.remove('hidden'); });
+
+  $('confirmBtn').addEventListener('click', function () {
+    var btn = $('confirmBtn'), msg = $('confirmMsg'); btn.disabled = true; msg.className = 'msg ok'; msg.textContent = '送信しています…';
+    var token = null; try { token = liff.getIDToken(); } catch (e) {}
+    if (!token) { btn.disabled = false; msg.className = 'msg err'; msg.textContent = 'LINE のログイン情報を確認できませんでした。開き直してください。'; return; }
+    var data = Object.assign({}, pending, { booking_datetime: label(chosen.date, chosen.start), booking_staff: chosen.staffName });
+    // (1) フォーム回答を保存（タグ付与・お礼メッセージ） → (2) 予約リクエスト
+    fetch(api + '/api/forms/' + encodeURIComponent(cfg.formId) + '/submit', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ data: data })
+    }).then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.success) throw new Error('form:' + (j && j.error || r.status)); }); })
+    .then(function () {
+      return fetch(api + '/api/liff/booking/requests?liffId=' + encodeURIComponent(cfg.accountLiffId), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'Idempotency-Key': (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()) },
+        body: JSON.stringify({ menu_id: menuId, staff_id: chosen.staffId, starts_at: jstIso(chosen.date, chosen.start), customer_note: '講義ページから申込' })
+      }).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error('booking:' + (j && j.error || r.status)); return j; }); });
+    })
+    .then(function () {
+      $('stepConfirm').classList.add('hidden'); $('stepDone').classList.remove('hidden');
+      text('doneDetail', '選択した日程：' + label(chosen.date, chosen.start)); window.scrollTo(0, 0);
+    })
+    .catch(function (e) {
+      btn.disabled = false; var m = String(e && e.message || '');
+      if (/booking:(slot_conflict|slot_not_available)/.test(m)) {
+        msg.className = 'msg err'; msg.textContent = '申し訳ありません、その時間は直前に埋まりました。別の日時を選び直してください。';
+        loadAvailability().then(function () { chosen = null; text('chosen', '未選択'); renderCalendar(); $('slots').classList.add('hidden'); $('stepConfirm').classList.add('hidden'); $('stepForm').classList.remove('hidden'); });
+      } else if (/Unauthorized|Friend not found|friend_not_found|unauthorized/i.test(m)) {
+        msg.className = 'msg err'; msg.textContent = 'LINE の本人確認ができませんでした。LINE のトーク内のリンクから開き直してください。';
+      } else {
+        msg.className = 'msg err'; msg.textContent = '送信できませんでした。時間をおいてもう一度お試しください。（' + m + '）';
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

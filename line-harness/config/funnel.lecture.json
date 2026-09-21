@@ -37,33 +37,38 @@
   },
   "forms": {
     "apply": {
-      "name": "個別相談会 申込アンケート",
-      "description": "講義をご覧いただきありがとうございます。個別相談会のご希望を教えてください。",
+      "name": "個別相談会 申込フォーム",
+      "description": "個別相談会（無料・オンライン60分）のお申し込み。",
       "fields": [
         {
-          "name": "full_name",
+          "name": "last_name",
           "label": "お名前",
           "type": "text",
           "required": true,
-          "placeholder": "お名前を入力"
+          "placeholder": "姓",
+          "pair": true
         },
         {
-          "name": "gender",
-          "label": "性別",
-          "type": "radio",
+          "name": "first_name",
+          "label": "名",
+          "type": "text",
           "required": true,
-          "options": [
-            "女性",
-            "男性",
-            "未回答"
-          ]
+          "placeholder": "名"
         },
         {
-          "name": "age",
-          "label": "ご年齢",
-          "type": "number",
+          "name": "last_kana",
+          "label": "フリガナ",
+          "type": "text",
           "required": true,
-          "placeholder": "ご年齢を入力"
+          "placeholder": "セイ",
+          "pair": true
+        },
+        {
+          "name": "first_kana",
+          "label": "メイ",
+          "type": "text",
+          "required": true,
+          "placeholder": "メイ"
         },
         {
           "name": "email",
@@ -73,56 +78,66 @@
           "placeholder": "メールアドレスを入力"
         },
         {
-          "name": "phone",
-          "label": "電話番号",
-          "type": "tel",
+          "name": "age",
+          "label": "ご年齢",
+          "type": "number",
           "required": true,
-          "placeholder": "電話番号を入力"
+          "placeholder": "ご年齢を入力"
         },
         {
-          "name": "job",
-          "label": "ご職業",
+          "name": "height",
+          "label": "身長",
+          "type": "number",
+          "required": true,
+          "placeholder": "身長を入力（cm）"
+        },
+        {
+          "name": "weight",
+          "label": "現在の体重",
+          "type": "number",
+          "required": true,
+          "placeholder": "現在の体重を入力（kg）"
+        },
+        {
+          "name": "support",
+          "label": "サポートを希望しますか？",
           "type": "radio",
           "required": true,
           "options": [
-            "会社員",
-            "公務員",
-            "自営業・経営者",
-            "パート・アルバイト",
-            "主婦・主夫",
-            "学生",
-            "その他"
+            "絶対に受けたい",
+            "金額によっては受けたい",
+            "まだ悩んでいる"
           ]
         },
         {
-          "name": "situation",
-          "label": "今のお悩みに一番近いもの",
-          "type": "radio",
-          "required": true,
-          "options": [
-            "【要差し替え】選択肢1",
-            "【要差し替え】選択肢2",
-            "【要差し替え】選択肢3",
-            "その他"
-          ]
-        },
-        {
-          "name": "goal",
-          "label": "相談会で一番聞きたいこと",
+          "name": "concern",
+          "label": "今の悩みを教えてください。",
           "type": "textarea",
-          "required": false,
-          "placeholder": "自由にどうぞ"
+          "required": true
         },
         {
-          "name": "preferred",
-          "label": "都合のよい時間帯（複数可）",
+          "name": "after",
+          "label": "痩せたらどんなことをしたいですか？",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "name": "serious",
+          "label": "本気で変わりたいですか？",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "絶対に変わりたい",
+            "そこまで本気ではない"
+          ]
+        },
+        {
+          "name": "confirm_meet",
+          "label": "無料診断会はGoogle Meetでのマンツーマン開催となります。集中してお話しできる環境でご参加ください！",
           "type": "checkbox",
           "required": true,
           "options": [
-            "平日 午前",
-            "平日 午後",
-            "平日 夜",
-            "土曜"
+            "確認しました！"
           ]
         }
       ],
@@ -177,7 +192,7 @@
     },
     "applied": {
       "name": "講義_申込後フォロー",
-      "description": "アンケート送信（タグ付与）直後に予約ページを案内。24時間後にまだ未予約なら念押し",
+      "description": "フォーム送信（タグ付与）直後の受付連絡。24時間後にまだ予約が確定していなければ予約ページを案内",
       "triggerType": "tag_added",
       "triggerTag": "applied",
       "deliveryMode": "relative",
@@ -253,7 +268,7 @@
     "menu": {
       "name": "個別相談会（オンライン・60分）",
       "category_label": "相談会",
-      "description": "講義の内容をもとに、あなたの状況に合わせて一緒に整理する60分（オンライン・マンツーマン）",
+      "description": "講義の内容をもとに、あなたの状況に合わせて一緒に整理する60分（Google Meet・マンツーマン）",
       "duration_minutes": 60,
       "buffer_after_minutes": 0,
       "base_price": 0,

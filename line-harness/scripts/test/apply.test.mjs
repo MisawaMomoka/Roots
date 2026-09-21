@@ -109,7 +109,7 @@ test('講義設定: skipIfTag が tag_not_exists 条件になり、フォーム�
   const applied = buildStepPayloads(lecture.scenarios.applied, ctx);
   assert.equal(applied[1].delayMinutes, 1440);
   assert.equal(applied[1].conditionValue, 'tg-c');
-  assert.ok(applied[0].messageContent.includes('https://liff.line.me/2-y?page=book'));
+  assert.ok(applied[1].messageContent.includes('https://liff.line.me/2-y?page=book'));
   for (const scenario of Object.values(lecture.scenarios)) {
     for (const step of buildStepPayloads(scenario, ctx)) {
       assert.ok(!step.messageContent.includes('__'), `${scenario.name} #${step.stepOrder}: 未置換`);
@@ -152,7 +152,7 @@ test('講義設定 applyAll: タグ → フォーム → リンク → シナリ
   };
   const r1 = await applyAll(ctx);
   assert.equal(state.forms[0].onSubmitTagId, r1.tagIds.applied);
-  assert.ok(state.forms[0].onSubmitMessageContent.includes('アンケートありがとうございます'));
+  assert.ok(state.forms[0].onSubmitMessageContent.includes('お申し込みありがとうございます'));
   assert.equal(state.links[0].originalUrl, 'https://roots-lecture.pages.dev');
   assert.equal(state.links[0].tagId, r1.tagIds.watched);
   const applied = state.scenarios.find((s) => s.name === '講義_申込後フォロー');

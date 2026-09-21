@@ -14,5 +14,5 @@
 
 --------------------
 明日：{{metadata.diag_date}} {{metadata.diag_time}}〜
-ZoomのURLは当日、開始2時間前にお送りします📩
+Google Meet のURLは当日、開始2時間前にお送りします📩
 --------------------

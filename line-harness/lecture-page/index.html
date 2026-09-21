@@ -5,90 +5,62 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>やせ習慣1Day講義</title>
-<meta name="description" content="LINE限定の講義動画と、個別相談会の申込フォーム">
+<meta name="description" content="LINE限定の講義動画と、個別相談会の申込">
 <!--
-  講義動画ページ（LINE2 用・LIFF アプリ）
-  上から：視聴期限のカウントダウン → 動画（自動再生・音の有効化）→ 一定時間視聴後に申込フォーム → ページ内で送信
-  設定は <script id="config"> の JSON だけ。フォームの項目は L Harness 側（config/funnel.lecture.json）から読み込む。
-  配置と LIFF 登録の手順: README.md
+  講義動画ページ（1ページ目）：視聴期限 → 動画（自動再生・音の有効化）→ 参加ボタン → 2ページ目（booking.html：カレンダー＋フォーム）
+  設定は <script id="config"> の JSON だけ。手順は README.md
 -->
 <script id="config" type="application/json">
 {
-  "liffId": "LIFF3_ID",
-  "apiUrl": "https://roots-line.re-tro.workers.dev",
-  "formId": "dc3fab6a-8123-4b2d-adb3-bad87bc226b7",
-
   "title": "やせ習慣1Day講義",
   "lead": "まずはこちらの動画をご覧ください",
   "video": { "youtubeId": "", "vimeoId": "", "mp4Url": "", "posterUrl": "" },
+  "speedNote": "※1.25倍速がおすすめです",
 
   "deadline": { "mode": "evergreen", "hours": 72, "fixedAt": "" },
   "deadlineTitle": "動画のご視聴期限",
 
-  "unlockAfterSeconds": 600,
-  "lockedNote": "一定時間ご視聴後、より詳細な情報を表示します",
+  "unlockAfterSeconds": 0,
+  "lockedNote": "一定時間ご視聴後、参加ボタンを表示します",
+
+  "ctaLabel": "【先着20名】無料で参加する",
+  "ctaNote": "※枠が埋まり次第無料での開催は終了します",
+  "bookingPage": "booking.html",
 
   "bonusTitle": "特典：グングン痩せる㊙エクササイズ動画（2本）",
   "bonus": [
     { "title": "エクササイズ動画①", "youtubeId": "" },
     { "title": "エクササイズ動画②", "youtubeId": "" }
-  ],
-
-  "formTitle": "個別相談会（無料・オンライン60分）",
-  "formLead": "講義の内容を、あなたの状況に当てはめて整理します。下のフォームを送信すると、LINEに日程を選べるリンクが届きます。",
-  "submitLabel": "▼ 審査フォームを提出 ▼",
-  "thanksTitle": "送信ありがとうございます",
-  "thanksBody": "このあと LINE に、相談会の日程を選べるリンクをお送りします。LINE をご確認ください。"
+  ]
 }
 </script>
 <style>
-  :root {
-    --bg: #eaf6fb; --panel: #f4fbfe; --card: #ffffff; --text: #1f2937; --muted: #6b7280;
-    --blue: #1a8fd8; --blue-dark: #1673b1; --line: #b9e2f5; --red: #e53935; --red-dark: #c62828; --border: #e5e7eb;
-  }
+  :root { --bg: #eaf6fb; --panel: #f4fbfe; --card: #fff; --text: #1f2937; --muted: #6b7280; --blue: #1a8fd8; --blue-dark: #1673b1; --line: #b9e2f5; --orange: #f5a623; --orange-dark: #d98c0a; --border: #e5e7eb; }
   * { box-sizing: border-box; }
   html, body { margin: 0; }
   body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; line-height: 1.7; }
   main { max-width: 680px; margin: 0 auto; padding: 24px 16px 64px; }
-
   .deadline { text-align: center; margin-bottom: 20px; }
   .deadline h1 { font-size: 1.35rem; font-weight: 600; color: var(--blue-dark); margin: 0 0 12px; letter-spacing: .04em; }
   .clock { display: flex; justify-content: center; gap: 12px; }
   .clock .unit { display: flex; align-items: flex-end; gap: 4px; }
   .clock .num { width: 64px; height: 64px; border: 3px solid var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: var(--blue); background: #fff; font-variant-numeric: tabular-nums; }
   .clock .lbl { font-size: .8rem; font-weight: 700; padding-bottom: 4px; }
-  .expired { color: var(--red); font-weight: 700; margin-top: 8px; }
-
+  .expired { color: #e53935; font-weight: 700; margin-top: 8px; }
   .pill { border: 2px solid var(--line); border-radius: 999px; background: var(--panel); text-align: center; padding: 16px; color: var(--blue-dark); font-weight: 700; letter-spacing: .06em; margin: 16px 0; }
-
   .video-wrap { position: relative; background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 6px 24px rgba(26,143,216,.12); }
   .video { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; overflow: hidden; }
   .video iframe, .video video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .unmute { position: absolute; top: 20px; right: 20px; z-index: 2; background: rgba(0,0,0,.72); color: #fff; border: 0; border-radius: 8px; padding: 10px 14px; font-size: .95rem; font-weight: 700; cursor: pointer; }
-  .unmute:hover { background: rgba(0,0,0,.85); }
-
+  .note { text-align: right; color: var(--muted); font-size: .9rem; margin: 8px 0 0; }
+  .cta { display: block; width: 100%; text-align: center; background: var(--orange); color: #fff; text-decoration: none; border: 0; border-bottom: 6px solid var(--orange-dark); border-radius: 6px; padding: 18px; font-size: 1.15rem; font-weight: 700; letter-spacing: .04em; margin: 16px 0 8px; }
+  .cta:active { transform: translateY(2px); border-bottom-width: 4px; }
+  .cta-note { text-align: center; color: var(--text); font-size: .95rem; margin: 0 0 8px; }
   .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-top: 18px; }
   .card h2 { font-size: 1.05rem; margin: 0 0 8px; }
   .bonus-item { margin-top: 12px; }
   .bonus-item h3 { font-size: .95rem; margin: 0 0 6px; }
-
-  .submit { display: block; width: 100%; background: var(--red); color: #fff; border: 0; border-radius: 10px; padding: 18px; font-size: 1.15rem; font-weight: 700; letter-spacing: .08em; box-shadow: 0 6px 18px rgba(229,57,53,.3); cursor: pointer; margin: 8px 0 16px; }
-  .submit:hover { background: var(--red-dark); }
-  .submit[disabled] { opacity: .6; cursor: default; }
-  .field { margin: 14px 0; }
-  .field label.title { display: block; font-weight: 700; margin-bottom: 6px; }
-  .req { display: inline-block; background: var(--red); color: #fff; font-size: .7rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
-  .field input[type=text], .field input[type=email], .field input[type=tel], .field input[type=number], .field input[type=date], .field textarea, .field select {
-    width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; background: #fff; color: var(--text);
-  }
-  .field textarea { min-height: 96px; }
-  .opt { display: block; padding: 4px 0; }
-  .opt input { margin-right: 8px; }
-  .msg { padding: 12px; border-radius: 8px; margin-top: 12px; }
-  .msg.err { background: #fdecea; color: #b71c1c; }
-  .msg.ok { background: #e8f5e9; color: #1b5e20; }
-  .muted { color: var(--muted); font-size: .9rem; }
-  .fallback a { color: var(--blue-dark); }
+  .setup { background: #fff3cd; color: #7a5200; border-radius: 8px; padding: 12px; margin: 12px 0; font-size: .9rem; }
   .hidden { display: none !important; }
 </style>
 </head>
@@ -107,265 +79,96 @@
 
   <div class="pill" id="lead"></div>
 
-  <div class="video-wrap">
+  <div class="setup hidden" id="setupNote">動画が設定されていません。index.html の config の "video" → "youtubeId" に YouTube の動画ID（11文字）を入れて配備してください。</div>
+
+  <div class="video-wrap" id="videoWrap">
     <div class="video" id="video"></div>
     <button class="unmute hidden" id="unmute" type="button">🔊 音の有効化</button>
   </div>
+  <p class="note" id="speedNote"></p>
 
-  <div class="pill" id="lockedNote"></div>
+  <div class="pill hidden" id="lockedNote"></div>
 
   <section id="unlocked" class="hidden">
+    <a class="cta" id="cta" href="booking.html"></a>
+    <p class="cta-note" id="ctaNote"></p>
+
     <section class="card hidden" id="bonusCard">
       <h2 id="bonusTitle"></h2>
       <div id="bonusList"></div>
     </section>
-
-    <section class="card" id="formCard">
-      <h2 id="formTitle"></h2>
-      <p id="formLead" class="muted" style="margin-top:0"></p>
-      <button class="submit" id="submitTop" type="button"></button>
-      <form id="form" novalidate>
-        <div id="fields"><p class="muted">フォームを読み込んでいます…</p></div>
-        <button class="submit" id="submitBottom" type="submit"></button>
-        <div id="formMsg"></div>
-      </form>
-      <p class="fallback muted hidden" id="fallback">フォームが表示されない場合は <a id="fallbackLink" href="#">こちら（LINEのアンケート）</a> からお申し込みください。</p>
-    </section>
-
-    <section class="card hidden" id="thanks">
-      <h2 id="thanksTitle"></h2>
-      <p id="thanksBody" style="margin:0"></p>
-    </section>
   </section>
 </main>
 
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
 (function () {
-  var cfg;
-  try { cfg = JSON.parse(document.getElementById('config').textContent); } catch (e) { cfg = {}; }
+  var cfg; try { cfg = JSON.parse(document.getElementById('config').textContent); } catch (e) { cfg = {}; }
   var $ = function (id) { return document.getElementById(id); };
   var text = function (id, v) { $(id).textContent = v || ''; };
-  var store = {
-    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
-    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  };
-  var KEY = 'lecture:' + (cfg.formId || 'default') + ':';
+  var store = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  var KEY = 'lecture:v2:';
 
   document.title = cfg.title || '講義動画';
-  text('lead', cfg.lead);
-  text('lockedNote', cfg.lockedNote);
-  text('deadlineTitle', cfg.deadlineTitle);
-  text('formTitle', cfg.formTitle);
-  text('formLead', cfg.formLead);
-  text('thanksTitle', cfg.thanksTitle);
-  text('thanksBody', cfg.thanksBody);
-  $('submitTop').textContent = $('submitBottom').textContent = cfg.submitLabel || '送信する';
+  text('lead', cfg.lead); text('speedNote', cfg.speedNote); text('deadlineTitle', cfg.deadlineTitle);
+  text('lockedNote', cfg.lockedNote); text('cta', cfg.ctaLabel || '無料で参加する'); text('ctaNote', cfg.ctaNote);
+  $('cta').href = (cfg.bookingPage || 'booking.html') + location.search;
 
-  // ---------- 視聴期限（evergreen: 初回アクセスから N 時間 ／ fixed: 固定日時） ----------
-  (function countdown() {
-    var d = cfg.deadline || {};
-    var end;
-    if (d.mode === 'fixed' && d.fixedAt) {
-      end = new Date(d.fixedAt).getTime();
-    } else {
-      var first = Number(store.get(KEY + 'first') || 0);
-      if (!first) { first = Date.now(); store.set(KEY + 'first', String(first)); }
-      end = first + (Number(d.hours) || 72) * 3600 * 1000;
-    }
+  // ---------- 視聴期限 ----------
+  (function () {
+    var d = cfg.deadline || {}, end;
+    if (d.mode === 'fixed' && d.fixedAt) end = new Date(d.fixedAt).getTime();
+    else { var first = Number(store.get(KEY + 'first') || 0); if (!first) { first = Date.now(); store.set(KEY + 'first', String(first)); } end = first + (Number(d.hours) || 72) * 3600000; }
     if (!isFinite(end)) { $('deadline').classList.add('hidden'); return; }
-    function tick() {
-      var left = Math.max(0, end - Date.now());
-      var s = Math.floor(left / 1000);
-      text('dD', Math.floor(s / 86400));
-      text('dH', Math.floor((s % 86400) / 3600));
-      text('dM', Math.floor((s % 3600) / 60));
-      text('dS', s % 60);
-      if (left <= 0) $('expired').classList.remove('hidden');
-    }
+    function tick() { var s = Math.floor(Math.max(0, end - Date.now()) / 1000); text('dD', Math.floor(s / 86400)); text('dH', Math.floor(s % 86400 / 3600)); text('dM', Math.floor(s % 3600 / 60)); text('dS', s % 60); if (s <= 0) $('expired').classList.remove('hidden'); }
     tick(); setInterval(tick, 1000);
   })();
 
-  // ---------- 動画（自動再生はミュート → 「音の有効化」で解除。再生時間を数えてフォームを解放） ----------
+  // ---------- 動画 ----------
+  var need = Number(cfg.unlockAfterSeconds) || 0;
   var watched = Number(store.get(KEY + 'watched') || 0);
-  var unlocked = store.get(KEY + 'unlocked') === '1' || (cfg.unlockAfterSeconds || 0) <= 0;
-  var player = null; // { unmute(), currentTime() }
-
-  function onProgress(seconds) {
-    if (unlocked) return;
-    if (seconds > watched) { watched = seconds; store.set(KEY + 'watched', String(Math.floor(watched))); }
-    if (watched >= (cfg.unlockAfterSeconds || 0)) unlock();
-  }
-  function unlock() {
-    unlocked = true; store.set(KEY + 'unlocked', '1');
-    $('lockedNote').classList.add('hidden');
-    $('unlocked').classList.remove('hidden');
-  }
+  var unlocked = need <= 0 || store.get(KEY + 'unlocked') === '1';
+  function unlock() { unlocked = true; store.set(KEY + 'unlocked', '1'); $('lockedNote').classList.add('hidden'); $('unlocked').classList.remove('hidden'); }
+  function onProgress(sec) { if (unlocked) return; if (sec > watched) { watched = sec; store.set(KEY + 'watched', String(Math.floor(watched))); } if (watched >= need) unlock(); }
 
   function mountVideo(v, box, opts) {
     v = v || {}; opts = opts || {};
     if (v.youtubeId) {
       var id = 'yt' + Math.random().toString(36).slice(2);
-      var host = document.createElement('div'); host.id = id; box.appendChild(host);
-      var params = 'rel=0&playsinline=1&enablejsapi=1&origin=' + encodeURIComponent(location.origin) + (opts.autoplay ? '&autoplay=1&mute=1' : '');
-      var yt = document.createElement('iframe');
-      yt.src = 'https://www.youtube.com/embed/' + encodeURIComponent(v.youtubeId) + '?' + params;
-      yt.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
-      yt.allowFullscreen = true; yt.title = opts.title || '動画';
-      host.replaceWith(yt); yt.id = id;
+      var yt = document.createElement('iframe'); yt.id = id;
+      yt.src = 'https://www.youtube.com/embed/' + encodeURIComponent(v.youtubeId) + '?rel=0&playsinline=1&enablejsapi=1&origin=' + encodeURIComponent(location.origin) + (opts.autoplay ? '&autoplay=1&mute=1' : '');
+      yt.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture'; yt.allowFullscreen = true; yt.title = opts.title || '動画';
+      box.appendChild(yt);
       if (!opts.track) return null;
-      // YouTube IFrame API（読み込めたときだけ再生時間を取る）
       var api = document.createElement('script'); api.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(api);
       var p = null;
-      window.onYouTubeIframeAPIReady = function () {
-        p = new YT.Player(id, { events: { onReady: function () { setInterval(function () { try { onProgress(p.getCurrentTime()); } catch (e) {} }, 1000); } } });
-      };
-      return { unmute: function () { try { p && p.unMute(); p && p.setVolume(100); } catch (e) {} } };
+      window.onYouTubeIframeAPIReady = function () { p = new YT.Player(id, { events: { onReady: function () { setInterval(function () { try { onProgress(p.getCurrentTime()); } catch (e) {} }, 1000); } } }); };
+      return { unmute: function () { try { p.unMute(); p.setVolume(100); } catch (e) {} } };
     }
     if (v.vimeoId) {
       var vm = document.createElement('iframe');
       vm.src = 'https://player.vimeo.com/video/' + encodeURIComponent(v.vimeoId) + '?dnt=1&playsinline=1' + (opts.autoplay ? '&autoplay=1&muted=1' : '');
-      vm.allow = 'autoplay; fullscreen; picture-in-picture'; vm.allowFullscreen = true; vm.title = opts.title || '動画';
-      box.appendChild(vm);
+      vm.allow = 'autoplay; fullscreen; picture-in-picture'; vm.allowFullscreen = true; vm.title = opts.title || '動画'; box.appendChild(vm);
       return opts.track ? { unmute: function () { vm.contentWindow.postMessage(JSON.stringify({ method: 'setVolume', value: 1 }), '*'); } } : null;
     }
     if (v.mp4Url) {
-      var el = document.createElement('video');
-      el.src = v.mp4Url; el.controls = true; el.playsInline = true; el.preload = 'metadata';
-      if (v.posterUrl) el.poster = v.posterUrl;
-      if (opts.autoplay) { el.autoplay = true; el.muted = true; }
-      box.appendChild(el);
+      var el = document.createElement('video'); el.src = v.mp4Url; el.controls = true; el.playsInline = true; el.preload = 'metadata';
+      if (v.posterUrl) el.poster = v.posterUrl; if (opts.autoplay) { el.autoplay = true; el.muted = true; } box.appendChild(el);
       if (opts.track) el.addEventListener('timeupdate', function () { onProgress(el.currentTime); });
       return opts.track ? { unmute: function () { el.muted = false; el.play(); } } : null;
     }
     return undefined;
   }
 
-  player = mountVideo(cfg.video, $('video'), { autoplay: true, track: true, title: cfg.title });
-  if (player === undefined) { $('video').classList.add('hidden'); unlock(); }
-  if (player) {
-    $('unmute').classList.remove('hidden');
-    $('unmute').addEventListener('click', function () { player.unmute(); $('unmute').classList.add('hidden'); });
-  }
-  if (unlocked) unlock();
+  var player = mountVideo(cfg.video, $('video'), { autoplay: true, track: true, title: cfg.title });
+  if (player === undefined) { $('videoWrap').classList.add('hidden'); $('speedNote').classList.add('hidden'); $('setupNote').classList.remove('hidden'); unlock(); }
+  else if (player) { $('unmute').classList.remove('hidden'); $('unmute').addEventListener('click', function () { player.unmute(); $('unmute').classList.add('hidden'); }); }
+  if (unlocked) unlock(); else $('lockedNote').classList.remove('hidden');
 
-  // ---------- 特典動画 ----------
   var bonus = (Array.isArray(cfg.bonus) ? cfg.bonus : []).filter(function (b) { return b && (b.youtubeId || b.vimeoId || b.mp4Url); });
   if (bonus.length) {
     $('bonusCard').classList.remove('hidden'); text('bonusTitle', cfg.bonusTitle || '特典動画');
-    bonus.forEach(function (b) {
-      var item = document.createElement('div'); item.className = 'bonus-item';
-      var h = document.createElement('h3'); h.textContent = b.title || '特典動画'; item.appendChild(h);
-      var vb = document.createElement('div'); vb.className = 'video'; item.appendChild(vb);
-      mountVideo(b, vb, { title: b.title }); $('bonusList').appendChild(item);
-    });
+    bonus.forEach(function (b) { var item = document.createElement('div'); item.className = 'bonus-item'; var h = document.createElement('h3'); h.textContent = b.title || '特典動画'; item.appendChild(h); var vb = document.createElement('div'); vb.className = 'video'; item.appendChild(vb); mountVideo(b, vb, { title: b.title }); $('bonusList').appendChild(item); });
   }
-
-  // ---------- フォーム（項目は L Harness から読み込み、LIFF の本人確認付きで送信） ----------
-  var api = (cfg.apiUrl || '').replace(/\/+$/, '');
-  var liffFormUrl = 'https://liff.line.me/' + (cfg.liffFormId || '2011653383-oiECpx5P') + '?page=form&id=' + encodeURIComponent(cfg.formId || '');
-  $('fallbackLink').href = liffFormUrl;
-  $('submitTop').addEventListener('click', function () { $('fields').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
-
-  function showMsg(kind, t) { var m = $('formMsg'); m.className = 'msg ' + kind; m.textContent = t; }
-  function fallback(reason) {
-    $('fields').innerHTML = '';
-    $('submitTop').classList.add('hidden'); $('submitBottom').classList.add('hidden');
-    $('fallback').classList.remove('hidden');
-    if (reason) showMsg('err', reason);
-  }
-
-  function renderFields(fields) {
-    var wrap = $('fields'); wrap.innerHTML = '';
-    fields.forEach(function (f) {
-      var div = document.createElement('div'); div.className = 'field';
-      var lab = document.createElement('label'); lab.className = 'title'; lab.textContent = f.label || f.name;
-      if (f.required) { var r = document.createElement('span'); r.className = 'req'; r.textContent = '必須'; lab.appendChild(r); }
-      div.appendChild(lab);
-      var t = f.type || 'text';
-      if (t === 'textarea') {
-        var ta = document.createElement('textarea'); ta.name = f.name; ta.placeholder = f.placeholder || ''; ta.required = !!f.required; div.appendChild(ta);
-      } else if (t === 'select') {
-        var sel = document.createElement('select'); sel.name = f.name; sel.required = !!f.required;
-        var o0 = document.createElement('option'); o0.value = ''; o0.textContent = '選択してください'; sel.appendChild(o0);
-        (f.options || []).forEach(function (o) { var op = document.createElement('option'); op.value = o; op.textContent = o; sel.appendChild(op); });
-        div.appendChild(sel);
-      } else if (t === 'radio' || t === 'checkbox') {
-        (f.options || []).forEach(function (o) {
-          var l = document.createElement('label'); l.className = 'opt';
-          var i = document.createElement('input'); i.type = t; i.name = f.name; i.value = o; l.appendChild(i); l.appendChild(document.createTextNode(o)); div.appendChild(l);
-        });
-      } else {
-        var inp = document.createElement('input'); inp.type = ['email', 'tel', 'number', 'date'].indexOf(t) >= 0 ? t : 'text';
-        inp.name = f.name; inp.placeholder = f.placeholder || ''; inp.required = !!f.required; div.appendChild(inp);
-      }
-      wrap.appendChild(div);
-    });
-  }
-
-  function collect(fields) {
-    var data = {}, missing = [];
-    var form = $('form');
-    fields.forEach(function (f) {
-      var t = f.type || 'text', v;
-      if (t === 'checkbox') v = Array.prototype.map.call(form.querySelectorAll('input[name="' + f.name + '"]:checked'), function (i) { return i.value; });
-      else if (t === 'radio') { var c = form.querySelector('input[name="' + f.name + '"]:checked'); v = c ? c.value : ''; }
-      else { var el = form.querySelector('[name="' + f.name + '"]'); v = el ? el.value.trim() : ''; }
-      if (f.required && (v === '' || (Array.isArray(v) && v.length === 0))) missing.push(f.label || f.name);
-      data[f.name] = v;
-    });
-    return { data: data, missing: missing };
-  }
-
-  var fields = [];
-  var ready = false;
-
-  function loadForm() {
-    return fetch(api + '/api/forms/' + encodeURIComponent(cfg.formId)).then(function (r) { return r.json(); }).then(function (j) {
-      if (!j || !j.success) throw new Error('form');
-      fields = Array.isArray(j.data.fields) ? j.data.fields : (typeof j.data.fields === 'string' ? JSON.parse(j.data.fields) : []);
-      renderFields(fields);
-    });
-  }
-
-  function initLiff() {
-    if (!window.liff || !cfg.liffId || cfg.liffId === 'LIFF3_ID') return Promise.reject(new Error('liff'));
-    return liff.init({ liffId: cfg.liffId }).then(function () {
-      if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return new Promise(function () {}); }
-    });
-  }
-
-  Promise.all([loadForm(), initLiff()]).then(function () { ready = true; }).catch(function () {
-    fallback('このページからの送信を準備できませんでした。下のリンクからお申し込みください。');
-  });
-
-  $('form').addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    if (!ready) return;
-    var c = collect(fields);
-    if (c.missing.length) { showMsg('err', '未入力の項目があります：' + c.missing.join('、')); return; }
-    var token = null;
-    try { token = liff.getIDToken(); } catch (e) {}
-    if (!token) { fallback('ログイン情報を確認できませんでした。下のリンクからお申し込みください。'); return; }
-    $('submitBottom').disabled = true; showMsg('ok', '送信しています…');
-    fetch(api + '/api/forms/' + encodeURIComponent(cfg.formId) + '/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ data: c.data })
-    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (res) {
-      if (!res.ok || !res.j.success) throw new Error((res.j && res.j.error) || 'submit');
-      $('formCard').classList.add('hidden'); $('thanks').classList.remove('hidden');
-      store.set(KEY + 'submitted', '1');
-      $('thanks').scrollIntoView({ behavior: 'smooth' });
-    }).catch(function (e) {
-      $('submitBottom').disabled = false;
-      var m = String(e && e.message || '');
-      if (/Unauthorized|Friend not found/i.test(m)) fallback('LINEの本人確認ができませんでした。下のリンクからお申し込みください。');
-      else showMsg('err', '送信できませんでした。時間をおいてもう一度お試しください。（' + m + '）');
-    });
-  });
-
-  if (store.get(KEY + 'submitted') === '1') { $('formCard').classList.add('hidden'); $('thanks').classList.remove('hidden'); }
 })();
 </script>
 </body>

@@ -1,6 +1,6 @@
 {{name}}さん、本日{{metadata.diag_time}}からです！
 
-▼ZoomのURLはこちら
+▼Google Meet のURLはこちら
 {{metadata.diag_meeting_url}}
 
 【持ち物】

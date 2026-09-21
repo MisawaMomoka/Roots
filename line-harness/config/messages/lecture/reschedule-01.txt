@@ -2,10 +2,10 @@
 
 ━━━━━━━━━━━
 📅 {{metadata.diag_date}} {{metadata.diag_time}}〜
-⏱ 約60分（Zoom・マンツーマン）
+⏱ 約60分（Google Meet・マンツーマン）
 ━━━━━━━━━━━
 
-・ZoomのURLは当日、開始2時間前にお送りします
+・Google Meet のURLは当日、開始2時間前にお送りします
 ・さらに変更が必要なときも、このLINEからどうぞ
 
 当日、お会いできるのを楽しみにしています！

@@ -16,9 +16,9 @@
 
   "staffMeetingUrls": {
     "担当者A": "https://zoom.us/j/0000000000?pwd=xxxx",
-    "徳原さん": "https://zoom.us/j/1111111111?pwd=xxxx",
-    "池端さん": "https://zoom.us/j/2222222222?pwd=xxxx",
-    "重田さん": "https://zoom.us/j/3333333333?pwd=xxxx"
+    "徳原さん": "https://meet.google.com/xxx-xxxx-xxx",
+    "池端さん": "https://meet.google.com/yyy-yyyy-yyy",
+    "重田さん": "https://meet.google.com/zzz-zzzz-zzz"
   },
   "defaultMeetingUrl": "https://zoom.us/j/0000000000?pwd=xxxx"
 }
