@@ -65,11 +65,14 @@ npx wrangler secret put ADMIN_ORIGIN
 ## 3. Cloudflare Pages に置く
 
 ```powershell
-Copy-Item -Recurse C:\Users\momoi\Roots-repo\line-harness\lecture-page $HOME\lecture-page -Force
+New-Item -ItemType Directory $HOME\lecture-page -Force | Out-Null
+Copy-Item -Path C:\Users\momoi\Roots-repo\line-harness\lecture-page\* -Destination $HOME\lecture-page -Recurse -Force
 cd $HOME\lecture-page
 npx wrangler pages project create roots-lecture --production-branch main   # 初回のみ
 npx wrangler pages deploy . --project-name roots-lecture --branch main
 ```
+
+`Copy-Item` は必ず `\lecture-page\*`（`*` 付き）で。`*` 無しだと2回目以降は `$HOME\lecture-page\lecture-page\` に入れ子でコピーされ、古いページが配備され続ける。
 
 `thumb.jpg`（LINE1 の誘導カード用）も一緒に上がる。
 
