@@ -3,7 +3,9 @@
 # - 前日 19:00 / 当日 2 時間前のリマインド
 # 手順は line-harness/03-operations.md §3 選択肢B。
 # 注意: schedule は「既定ブランチ」にあるワークフローだけ動く。
-#       既定ブランチを切り替えた後は、このファイル自体を変更して push しないと schedule が登録されないことがある。
+#       さらに、schedule は「このファイルを最後にコミットした GitHub ユーザー」の権限で動く。
+#       GitHub ユーザーに紐づかないコミット（noreply アドレス等）が最後だと定期実行が始まらないので、
+#       このファイルの変更はリポジトリのオーナーが GitHub 上でコミットする。
 name: line-harness sync (lecture)
 
 on:
