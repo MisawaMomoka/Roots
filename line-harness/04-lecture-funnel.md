@@ -58,6 +58,24 @@ LP や他媒体からは `https://roots-line.re-tro.workers.dev/auth/line?accoun
 
 ---
 
+### 流入経路ごとの友だち追加リンク（ストーリー／リール）
+
+インフルエンサーに渡すリンクを流入元ごとに分け、経路別の友だち追加数と割合を見る。L Harness の「流入経路（entry_routes）」機能を使う。
+経路は `config/funnel.line1.json` の `entryRoutes`（今はストーリー用 `ig_story`、リール用 `ig_reel`）。追加したければ 1 行足して再実行する。
+
+```powershell
+node scripts/entry-routes.mjs --env=.env.line1 --config=config/funnel.line1.json          # 経路を作成し、配布用リンクを表示
+node scripts/entry-routes.mjs --env=.env.line1 --config=config/funnel.line1.json --stats  # 経路別の クリック / 友だち追加 / 割合 / 申込
+```
+
+リンクの形は `https://roots-line.re-tro.workers.dev/auth/line?account=<LINE1 の Messaging チャネルID>&ref=ig_story`。
+開くと LINE ログイン → LINE1 の友だち追加になり、その人に `流入_IGストーリー` などのタグが付く（管理画面の友だち一覧でも絞り込める）。
+通常の友だち追加シナリオ（誘導カード）はそのまま動く。
+
+前提：LINE1 のアカウント設定（管理画面 → LINEアカウント → 編集）に **LINE Login チャネル ID／シークレットと LIFF ID** が入っていること。未設定だとリンクが動かない（スクリプトが警告を出す）。
+
+管理画面での確認：左メニュー「リファラルリンク」に経路が並び、各経路の数字も見られる。
+
 ## 判断：動画ページは自前の1枚ページ、申込は L Harness フォーム
 
 | 候補 | 内容 | 採用 |

@@ -1,7 +1,15 @@
 {
   "$comment": "LINE1（理駆・既存）用。友だち追加の直後にサムネイル＋受け取りボタンを送り、LINE2（講義）へ誘導するだけ。L Harness は即時ステップを 1 通目しか友だち追加の瞬間に送れない（2 通目以降は cron 待ちで遅れる）ので、あいさつ文（invite-01.txt）は LINE 側の「あいさつメッセージ」で送り、ここは Flex 1 通だけにする。apply.mjs --env=.env.line1 --config=config/funnel.line1.json",
   "messagesDir": "line1",
-  "tags": [],
+  "tags": [
+    { "key": "ig_story", "name": "流入_IGストーリー", "color": "#E1306C" },
+    { "key": "ig_reel", "name": "流入_IGリール", "color": "#833AB4" }
+  ],
+  "$entryRoutesComment": "流入経路ごとの友だち追加リンク。scripts/entry-routes.mjs で作成し、--stats で人数と割合を見る。refCode は URL に出るので英数字で",
+  "entryRoutes": [
+    { "key": "ig_story", "refCode": "ig_story", "name": "Instagram ストーリー（インフルエンサー）", "tag": "ig_story" },
+    { "key": "ig_reel", "refCode": "ig_reel", "name": "Instagram リール（インフルエンサー）", "tag": "ig_reel" }
+  ],
   "scenarios": {
     "invite": {
       "name": "講義_LINE2への誘導",

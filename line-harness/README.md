@@ -59,7 +59,7 @@
 | 役割 | 講義の案内だけ流し、LINE2 へ誘導 | 講義動画 → アンケート → 個別相談会 |
 | 設定 | `config/funnel.line1.json`（LINE2 への誘導のみ） | `config/funnel.lecture.json` |
 | 接続情報 | `.env.line1` | `.env.lecture` |
-| コマンド | `pnpm apply:line1` | `pnpm apply:lecture` / `pnpm sync:lecture` |
+| コマンド | `pnpm apply:line1` / `pnpm routes:line1`（流入経路リンク） | `pnpm apply:lecture` / `pnpm sync:lecture` |
 
 `config/funnel.json` と `.env` は、当初想定していた診断会ファネル（ゆうなりさん案件）の設定。今回の LINE1／LINE2 では使わない。
 
