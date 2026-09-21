@@ -1,0 +1,66 @@
+# L Harness の Worker（roots-line）を「配布済みバンドル + 自前パッチ」で配備する。
+# 本番の Worker を置き換えるので、push では動かさず「手動実行（Actions タブ → Run workflow）」だけで動く。
+# 必要な Secret: CLOUDFLARE_API_TOKEN（テンプレート「Cloudflare Workers を編集する」で作成）
+# 手順・注意は line-harness/worker-fork/README.md
+name: deploy line-harness worker (patched)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: line-harness/worker-fork
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: 配布済みバンドルを取得（version.json の bundleUrl）
+        run: |
+          set -euo pipefail
+          URL=$(node -p "require('./version.json').bundleUrl")
+          echo "bundle: $URL"
+          curl -sSL --fail --retry 3 -o bundle.tar.gz "$URL"
+          mkdir -p bundle && tar -xzf bundle.tar.gz -C bundle
+          test -f bundle/worker/index.js
+          test -d bundle/worker-assets
+
+      - name: パッチを当てる（アンカー不一致なら失敗）
+        run: |
+          set -euo pipefail
+          node patch.mjs bundle/worker/index.js --check
+          node patch.mjs bundle/worker/index.js
+          node --check bundle/worker/index.js
+
+      - name: 配備用レイアウトを作る
+        run: |
+          set -euo pipefail
+          rm -rf deploy && mkdir -p deploy/dist/release deploy/dist/client
+          cp bundle/worker/index.js deploy/dist/release/index.js
+          cp -R bundle/worker-assets/. deploy/dist/client/
+          cp wrangler.toml deploy/wrangler.toml
+          ls -la deploy deploy/dist/release deploy/dist/client | head -40
+
+      - name: Cloudflare に配備
+        working-directory: line-harness/worker-fork/deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "Secret CLOUDFLARE_API_TOKEN が未設定です"; exit 1; }
+          npx --yes wrangler@4 deploy --config wrangler.toml
+
+      - name: 動作確認（/api/health）
+        run: |
+          set -euo pipefail
+          sleep 5
+          curl -sS --fail "https://roots-line.re-tro.workers.dev/api/health" | head -c 400 || { echo "health check failed"; exit 1; }
