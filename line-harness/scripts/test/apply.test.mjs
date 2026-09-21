@@ -203,13 +203,10 @@ test('LINE1 設定: Flex にサムネイルと LINE2 の auth_url が入り、�
     placeholders: { LINE2_CHANNEL_ID: '2011652832', THUMB_URL: 'https://roots-lecture.pages.dev/thumb.jpg', THUMB_ASPECT: '16:9' },
   };
   const steps = buildStepPayloads(line1.scenarios.invite, ctx);
-  // 即時ステップは 1 通目しか友だち追加の瞬間に送られないので、必ず Flex 1 ステップにまとめる
-  assert.equal(steps.length, 1);
-  assert.equal(steps[0].messageType, 'flex');
-  assert.equal(steps[0].delayMinutes, 0);
-  const bubble = JSON.parse(steps[0].messageContent);
-  assert.match(bubble.header.contents[0].text, /^\{\{name\}\}さん、友だち追加ありがとうございます！\n/);
-  assert.deepEqual(bubble.body.contents.map((c) => c.text), ['やせ習慣1Day講義']);
+  assert.equal(steps.length, 2);
+  assert.equal(steps[0].messageType, 'text');
+  assert.equal(steps[1].messageType, 'flex');
+  const bubble = JSON.parse(steps[1].messageContent);
   assert.equal(bubble.hero.url, 'https://roots-lecture.pages.dev/thumb.jpg');
   assert.equal(bubble.hero.aspectRatio, '16:9');
   assert.equal(bubble.footer.contents[0].action.uri, '{{auth_url:2011652832}}');
