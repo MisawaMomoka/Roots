@@ -211,7 +211,7 @@
       if (chosen && chosen.date === date && chosen.start === start) b.classList.add('sel');
       b.addEventListener('click', function () {
         var s = byDate[date][start]; chosen = { date: date, start: start, end: s.end, staffId: s.staffId, staffName: s.staffName };
-        text('chosen', label(date, start)); renderCalendar(); showSlots(date);
+        text('chosen', label(date, start)); renderCalendar(); showSlots(date); saveState();
         $('chosen').scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
       box.appendChild(b);
@@ -282,16 +282,61 @@
   }
 
   // ---------- LIFF ----------
+  // ID トークンの期限切れ対策。LIFF はアクセストークン（約12時間）が有効な間は古い ID トークン（約1時間で失効）を
+  // 返し続けるため、そのまま送ると Worker の本人確認が「Unauthorized」になる。期限が近ければログインし直す。
+  function idTokenFresh() {
+    try { var d = liff.getDecodedIDToken(); return !!(d && d.exp && d.exp * 1000 > Date.now() + 90 * 1000); } catch (e) { return false; }
+  }
+  function relogin() {
+    saveState();
+    try { liff.logout(); } catch (e) {}
+    if (liff.isInClient()) { location.reload(); }            // LINE アプリ内: 再読み込みで新しいトークンをもらう
+    else { liff.login({ redirectUri: location.href }); }    // 外部ブラウザ: ログイン画面へ
+    return new Promise(function () {});
+  }
   function initLiff() {
     if (!window.liff || !cfg.liffId) return Promise.reject(new Error('liff'));
     return liff.init({ liffId: cfg.liffId }).then(function () {
-      if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return new Promise(function () {}); }
+      if (!liff.isLoggedIn() || !idTokenFresh()) return relogin();
     });
+  }
+
+  // ---------- 入力内容の一時保存（ログインし直しやページ再読み込みで消えないように） ----------
+  var STATE_KEY = 'roots_apply_state';
+  function saveState() {
+    try {
+      var form = $('form'), values = {};
+      Array.prototype.forEach.call(form.querySelectorAll('input, textarea, select'), function (el) {
+        if (!el.name) return;
+        if (el.type === 'checkbox' || el.type === 'radio') { if (el.checked) { values[el.name] = values[el.name] || []; values[el.name].push(el.value); } }
+        else values[el.name] = el.value;
+      });
+      sessionStorage.setItem(STATE_KEY, JSON.stringify({ values: values, chosen: chosen, at: Date.now() }));
+    } catch (e) {}
+  }
+  function loadState() {
+    try { var raw = sessionStorage.getItem(STATE_KEY); if (!raw) return null; var st = JSON.parse(raw); return (Date.now() - (st.at || 0) < 6 * 60 * 60 * 1000) ? st : null; } catch (e) { return null; }
+  }
+  function restoreValues(st) {
+    if (!st || !st.values) return;
+    var form = $('form');
+    Array.prototype.forEach.call(form.querySelectorAll('input, textarea, select'), function (el) {
+      if (!el.name || !(el.name in st.values)) return;
+      var v = st.values[el.name];
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = Array.isArray(v) && v.indexOf(el.value) >= 0;
+      else el.value = v;
+    });
+  }
+  function restoreChosen(st) {
+    if (!st || !st.chosen || !byDate[st.chosen.date] || !byDate[st.chosen.date][st.chosen.start]) return;
+    var s = byDate[st.chosen.date][st.chosen.start];
+    chosen = { date: st.chosen.date, start: st.chosen.start, end: s.end, staffId: s.staffId, staffName: s.staffName };
+    text('chosen', label(chosen.date, chosen.start)); view = { y: Number(chosen.date.slice(0, 4)), m: Number(chosen.date.slice(5, 7)) }; renderCalendar(); showSlots(chosen.date);
   }
 
   var ready = false, pending = null;
   Promise.all([loadMenu().then(loadAvailability).then(renderCalendar), loadForm(), initLiff()])
-    .then(function () { ready = true; })
+    .then(function () { ready = true; var st = loadState(); restoreValues(st); restoreChosen(st); })
     .catch(function (e) {
       var m = String(e && e.message || '');
       fail(m === 'liff' ? 'LINE のログイン情報を確認できませんでした。LINE のトーク内のリンクから開き直してください。'
@@ -300,6 +345,8 @@
     });
 
   // ---------- 確認 → 送信 ----------
+  $('form').addEventListener('input', saveState);
+  $('form').addEventListener('change', saveState);
   $('form').addEventListener('submit', function (ev) {
     ev.preventDefault(); if (!ready) return;
     var c = collect();
@@ -318,7 +365,10 @@
   $('confirmBtn').addEventListener('click', function () {
     var btn = $('confirmBtn'), msg = $('confirmMsg'); btn.disabled = true; msg.className = 'msg ok'; msg.textContent = '送信しています…';
     var token = null; try { token = liff.getIDToken(); } catch (e) {}
-    if (!token) { btn.disabled = false; msg.className = 'msg err'; msg.textContent = 'LINE のログイン情報を確認できませんでした。開き直してください。'; return; }
+    if (!token || !idTokenFresh()) {
+      msg.className = 'msg err'; msg.textContent = 'LINE のログイン情報を更新しています。入力内容は保持されるので、そのままお待ちください…';
+      relogin(); return;
+    }
     var data = Object.assign({}, pending, { booking_datetime: label(chosen.date, chosen.start), booking_staff: chosen.staffName });
     // カレンダーの予定メモ（L Harness は customer_note を「メモ:」としてそのまま Google カレンダーに書く）
     var src = sourceCode();
@@ -340,6 +390,7 @@
       }).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error('booking:' + (j && j.error || r.status)); return j; }); });
     })
     .then(function () {
+      try { sessionStorage.removeItem(STATE_KEY); } catch (e) {}
       $('stepConfirm').classList.add('hidden'); $('stepDone').classList.remove('hidden');
       text('doneDetail', '選択した日程：' + label(chosen.date, chosen.start)); window.scrollTo(0, 0);
     })
@@ -349,7 +400,9 @@
         msg.className = 'msg err'; msg.textContent = '申し訳ありません、その時間は直前に埋まりました。別の日時を選び直してください。';
         loadAvailability().then(function () { chosen = null; text('chosen', '未選択'); renderCalendar(); $('slots').classList.add('hidden'); $('stepConfirm').classList.add('hidden'); $('stepForm').classList.remove('hidden'); });
       } else if (/Unauthorized|Friend not found|friend_not_found|unauthorized/i.test(m)) {
-        msg.className = 'msg err'; msg.textContent = 'LINE の本人確認ができませんでした。LINE のトーク内のリンクから開き直してください。（' + m + '）';
+        var diag = ''; try { var d = liff.getDecodedIDToken(); if (d) diag = ' aud=' + d.aud + (d.exp * 1000 < Date.now() ? ' 期限切れ' : ''); } catch (e) {}
+        if (/Unauthorized|unauthorized/i.test(m)) { try { liff.logout(); } catch (e) {} }  // 次に開いたときに新しいトークンを取り直す
+        msg.className = 'msg err'; msg.textContent = 'LINE の本人確認ができませんでした。LINE のトーク内のリンクから開き直してください。（' + m + diag + '）';
       } else {
         msg.className = 'msg err'; msg.textContent = '送信できませんでした。時間をおいてもう一度お試しください。（' + m + '）';
       }

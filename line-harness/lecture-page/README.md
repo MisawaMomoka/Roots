@@ -108,7 +108,7 @@ L Harness の予約（サロン型）は Google カレンダーに予定を作�
 
 | 括弧内 | 意味 | 直し方 |
 |---|---|---|
-| `form:Unauthorized` / `booking:Unauthorized` | LIFF の ID トークンを Worker が検証できない | 管理画面 → LINEアカウント → LINE2 の「LINE Login チャネルID」が LIFF のチャネル（`2011653383`）になっているか。ページを長時間開いたままだとトークン期限切れになるので、LINE から開き直す |
+| `form:Unauthorized` / `booking:Unauthorized` | LIFF の ID トークンを Worker が検証できない | ほとんどは **ID トークンの期限切れ**（LIFF はアクセストークン約12時間の間、約1時間で失効する ID トークンを使い回す）。ページ側で期限を見てログインし直す処理を入れてあり、エラー文に `期限切れ` と出る。`aud=` が `2011653383` 以外なら、管理画面 → LINEアカウント → LINE2 の「LINE Login チャネルID」を確認 |
 | `form:Friend not found` / `booking:Friend not found` | ログインした LINE ユーザーが L Harness の友だちにいない | LINE Login チャネルと Messaging API チャネルが **同じプロバイダー** にあるか（別だとユーザー ID が食い違う）。管理画面の友だち一覧に自分がいるか |
 | `booking:slot_conflict` | 直前に枠が埋まった | 別の枠を選ぶ（画面が自動で戻る） |
 | `form:...`（その他） | フォームの必須項目や形式 | 管理画面のフォーム設定を確認 |
