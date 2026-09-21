@@ -97,31 +97,26 @@ Unregister-ScheduledTask -TaskName roots-line-sync-lecture -Confirm:$false   # �
 
 ログ `sync-lecture.log` は `.gitignore` 済み。
 
-### 選択肢B：GitHub Actions（5分間隔だが遅延10分以上のことがある）
+### 選択肢B：GitHub Actions（PC 不要・採用中）
 
-`.github/workflows/line-sync.yml`（このリポジトリに置く。Secrets に `LINE_HARNESS_API_URL` `LINE_HARNESS_API_KEY` `LINE_HARNESS_ACCOUNT_ID` を登録）
+ワークフローは `.github/workflows/line-sync-lecture.yml`（リポジトリ直下）。5 分おきに `sync-bookings.mjs --config=config/funnel.lecture.json` を実行する。
+GitHub の混雑時は実行が 10 分以上遅れることがある（お礼・リマインドがその分遅れるだけで、抜けはしない）。
 
-```yaml
-name: line-harness sync
-on:
-  schedule: [{ cron: '*/5 * * * *' }]
-  workflow_dispatch:
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
-      - run: node line-harness/scripts/sync-bookings.mjs
-        env:
-          LINE_HARNESS_API_URL: ${{ secrets.LINE_HARNESS_API_URL }}
-          LINE_HARNESS_API_KEY: ${{ secrets.LINE_HARNESS_API_KEY }}
-          LINE_HARNESS_ACCOUNT_ID: ${{ secrets.LINE_HARNESS_ACCOUNT_ID }}
-```
+1. GitHub → リポジトリ → Settings → Secrets and variables → Actions → **New repository secret** で登録：
 
-`config/assets.json` は `.gitignore` 済みなので、Actions で使うなら `staffMeetingUrls` を含めた JSON を Secret にして
-`echo "$ASSETS_JSON" > line-harness/config/assets.json` のステップを足す。
+   | Name | Value |
+   |---|---|
+   | `LINE_HARNESS_API_URL` | `https://roots-line.re-tro.workers.dev` |
+   | `LINE_HARNESS_API_KEY` | `.env.lecture` の `LINE_HARNESS_API_KEY=` の右側 |
+   | `LINE_HARNESS_ACCOUNT_ID` | LINE2 のアカウント ID（`.env.lecture` の `LINE_HARNESS_ACCOUNT_ID=` の右側） |
+   | `ASSETS_JSON`（任意） | `config/assets.json` の中身をそのまま（担当者ごとの Meet リンク） |
+
+2. **既定ブランチ**にワークフローがあること（schedule は既定ブランチでしか動かない）。Settings → General → Default branch で確認・変更する。
+3. Actions タブ → 「line-harness sync (lecture)」→ **Run workflow** で手動実行し、緑のチェックになるのを確認する。ログの最終行が `承認 n / 登録 {...} / スキップ n / エラー n`。
+4. 以後は 5 分おきに自動実行。Actions タブで赤（失敗）が続いたら Secret を疑う。
+
+注意：公開リポジトリでは **60 日間コミットがないと schedule が自動停止**する（Actions タブに警告が出る）。止まったら「Enable workflow」で再開する。
+`config/assets.json` は `.gitignore` 済みなので、Meet リンクを変えたら Secret `ASSETS_JSON` も更新する。
 
 ### 選択肢C：L Harness プラグイン（Cloudflare Worker の cron）に移植
 

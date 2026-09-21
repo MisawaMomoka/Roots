@@ -1,0 +1,39 @@
+# LINE2（講義）の予約自動処理を GitHub Actions で 5 分おきに実行する。
+# - 予約リクエストの自動承認 → 「予約が確定しました」メッセージ
+# - 前日 19:00 / 当日 2 時間前のリマインド
+# 手順は line-harness/03-operations.md §3 選択肢B。
+# 注意: schedule は「既定ブランチ」にあるワークフローだけ動く。
+name: line-harness sync (lecture)
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: line-sync-lecture
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: line-harness
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: config/assets.json（担当者ごとの Meet リンク）を Secret から復元
+        if: ${{ env.ASSETS_JSON != '' }}
+        env:
+          ASSETS_JSON: ${{ secrets.ASSETS_JSON }}
+        run: printf '%s' "$ASSETS_JSON" > config/assets.json
+      - name: sync-bookings
+        env:
+          LINE_HARNESS_API_URL: ${{ secrets.LINE_HARNESS_API_URL }}
+          LINE_HARNESS_API_KEY: ${{ secrets.LINE_HARNESS_API_KEY }}
+          LINE_HARNESS_ACCOUNT_ID: ${{ secrets.LINE_HARNESS_ACCOUNT_ID }}
+        run: node scripts/sync-bookings.mjs --config=config/funnel.lecture.json
