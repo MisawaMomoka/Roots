@@ -97,14 +97,15 @@ test('講義設定: skipIfTag が tag_not_exists 条件になり、フォーム�
   const ctx = {
     assets: null, messagesDir: lecture.messagesDir,
     tagIds: { watched: 'tg-w', applied: 'tg-a', confirmed: 'tg-c' },
-    placeholders: { BOOKING_URL: 'https://liff.line.me/2-y?page=book', LECTURE_LINK: 'https://w/t/abc', FORM_ID_apply: 'form-1', BONUS1_URL: 'https://youtu.be/b1', BONUS2_URL: 'https://youtu.be/b2' },
+    placeholders: { BOOKING_URL: 'https://liff.line.me/2-y?page=book', LECTURE_LINK: 'https://w/t/abc', LECTURE_LINK_SRC: 'https://liff.line.me/2-z?src={{ref}}', FORM_ID_apply: 'form-1', BONUS1_URL: 'https://youtu.be/b1', BONUS2_URL: 'https://youtu.be/b2' },
   };
   const drip = buildStepPayloads(lecture.scenarios.drip, ctx);
   assert.equal(drip[0].conditionType, undefined);
   assert.equal(drip[1].conditionType, 'tag_not_exists');
   assert.equal(drip[1].conditionValue, 'tg-a');
   assert.deepEqual(drip.map((s) => [s.offsetDays, s.deliveryTime]), [[0, '00:00'], [0, '21:00'], [1, '08:00'], [1, '20:00'], [2, '20:00']]);
-  assert.ok(drip[0].messageContent.includes('https://w/t/abc'));
+  // 講義リンクは流入元を引き継ぐ直リンク（?src={{ref}}）。配信時に L Harness が {{ref}} を展開する
+  assert.ok(drip[0].messageContent.includes('https://liff.line.me/2-z?src={{ref}}'));
   assert.ok(drip[1].messageContent.includes('{{form_url:form-1}}'));
   const bonus = buildStepPayloads(lecture.scenarios.bonus, ctx);
   assert.equal(bonus[0].delayMinutes, 60);
@@ -162,7 +163,7 @@ test('講義設定 applyAll: タグ → フォーム → リンク → シナリ
   assert.equal(applied.triggerType, 'tag_added');
   assert.equal(applied.triggerTagId, r1.tagIds.applied);
   const drip = state.scenarios.find((s) => s.name === '講義_友だち追加ステップ');
-  assert.ok(state.steps[drip.id][0].messageContent.includes(state.links[0].trackingUrl));
+  assert.ok(state.steps[drip.id][0].messageContent.includes("https://roots-lecture.pages.dev?src={{ref}}"));
   assert.ok(state.steps[drip.id][1].messageContent.includes(`{{form_url:${state.forms[0].id}}}`));
 
   const before = writes.length;
@@ -200,7 +201,7 @@ test('LINE1 設定: Flex にサムネイルと LINE2 の auth_url が入り、�
   const line1 = loadFunnelConfig('config/funnel.line1.json');
   const ctx = {
     assets: null, messagesDir: line1.messagesDir, tagIds: {},
-    placeholders: { LINE2_CHANNEL_ID: '2011652832', THUMB_URL: 'https://roots-lecture.pages.dev/thumb.jpg', THUMB_ASPECT: '16:9' },
+    placeholders: { API_URL: 'https://w.example.com', LINE2_CHANNEL_ID: '2011652832', THUMB_URL: 'https://roots-lecture.pages.dev/thumb.jpg', THUMB_ASPECT: '16:9' },
   };
   const steps = buildStepPayloads(line1.scenarios.invite, ctx);
   // あいさつ文は LINE 側のあいさつメッセージで送るので、L Harness 側は即時 Flex 1 通だけ
@@ -211,8 +212,10 @@ test('LINE1 設定: Flex にサムネイルと LINE2 の auth_url が入り、�
   assert.deepEqual(bubble.body.contents.map((c) => c.text), ['やせ習慣1Day講義']);
   assert.equal(bubble.hero.url, 'https://roots-lecture.pages.dev/thumb.jpg');
   assert.equal(bubble.hero.aspectRatio, '16:9');
-  assert.equal(bubble.footer.contents[0].action.uri, '{{auth_url:2011652832}}');
-  assert.equal(bubble.hero.action.uri, '{{auth_url:2011652832}}');
+  // LINE1 の流入元（ref）を LINE2 に引き継ぐため、{{auth_url}}（ref=cross-link 固定）ではなく uid+ref 付きの URL を自前で組む
+  const want = 'https://w.example.com/auth/line?account=2011652832&uid={{uid}}{{#if_ref}}&ref={{ref}}{{/if_ref}}';
+  assert.equal(bubble.footer.contents[0].action.uri, want);
+  assert.equal(bubble.hero.action.uri, want);
   for (const s of steps) assert.ok(!s.messageContent.includes('__'), '未置換のプレースホルダー');
   assert.throws(() => buildStepPayloads(line1.scenarios.invite, { ...ctx, placeholders: {} }), /THUMB_URL|LINE2_CHANNEL_ID/);
 });

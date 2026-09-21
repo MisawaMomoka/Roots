@@ -18,4 +18,4 @@
 {{form_url:__FORM_ID_apply__}}
 
 まだ動画を見ていない方はこちら👇
-__LECTURE_LINK__
+__LECTURE_LINK_SRC__

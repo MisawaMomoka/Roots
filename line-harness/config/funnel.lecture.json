@@ -279,7 +279,7 @@
   },
   "booking": {
     "menu": {
-      "name": "個別相談会（オンライン・60分）",
+      "name": "個別診断会",
       "category_label": "相談会",
       "description": "講義の内容をもとに、あなたの状況に合わせて一緒に整理する60分（Google Meet・マンツーマン）",
       "duration_minutes": 60,

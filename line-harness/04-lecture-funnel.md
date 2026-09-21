@@ -177,3 +177,24 @@ Google 側の OAuth 同意画面が「テスト」状態のうちは、「対象
 6. 管理画面で担当者（リク）の Googleカレンダーを接続
 7. テスト：LINE2 を友だち追加 → 動画ページ → アンケート → 予約 → `pnpm sync:lecture -- --verbose`
 8. `sync-bookings.mjs` の定期実行に LINE2 用の行を足す（`03-operations.md` §3）
+
+## Google カレンダーの予定（タイトルとメモ）
+
+予約が「確定」になった瞬間に、L Harness が担当者の Google カレンダーへ予定を作る。書式は L Harness 側で固定されている。
+
+| 部分 | 中身 | こちらで変えられるか |
+|---|---|---|
+| タイトル | `LINE の表示名｜メニュー名`（例 `momoka｜個別診断会`） | メニュー名だけ（`funnel.lecture.json` の `booking.menu.name`。管理画面のメニュー名も同じにする） |
+| メモ | `L Harness予約（担当: …）` / `予約ID: …` / `メモ: <申込時の customer_note>` | `customer_note` は申込ページ（`lecture-page/booking.html`）が作る。**フォームの全回答＋流入元＋希望日時**を入れている |
+
+タイトルを「フォームの氏名：インフルエンサー名｜個別診断会」にするには L Harness 本体（Worker の `services/booking-calendar-sync.ts`）の改造が必要。改造版を自前で配備・保守する判断になるので、必要なら別途相談。
+
+### 流入元（どのインフルエンサー／経路から来たか）を申込ページまで引き継ぐ仕組み
+
+1. LINE1 の友だち追加リンク `…/auth/line?account=<LINE1>&ref=ig_story` で追加 → LINE1 の友だちに `ref_code = ig_story`
+2. LINE1 の誘導カードのリンクは `{{auth_url:…}}` ではなく `…/auth/line?account=<LINE2>&uid={{uid}}&ref={{ref}}` を自前で組む（`{{auth_url}}` は ref が `cross-link` 固定で流入元が消えるため）→ LINE2 の友だちにも同じ `ref_code`（と `流入_IGストーリー` タグ）が付く
+3. LINE2 の講義リンクは `https://liff.line.me/<講義LIFF>?src={{ref}}`（プレースホルダー `__LECTURE_LINK_SRC__`）。配信時に L Harness が `{{ref}}` を展開する
+4. 講義ページ → 申込ページへ `?src=` を引き継ぎ、申込時の `customer_note` に `流入元：Instagram ストーリー（ig_story）` と書く。表示名は `booking.html` の `sourceLabels` で変更できる
+
+`routes:line1:stats` の友だち追加数は LINE1 アカウント内だけを数える（ref が LINE2 にも付くため、全体で数えると二重になる）。
+

@@ -45,25 +45,26 @@ test('entry-routes: 無い経路は作成、名前やタグが違う経路は更
   assert.deepEqual(calls, ['GET /api/entry-routes', 'POST /api/entry-routes', 'PATCH /api/entry-routes/r-reel']);
 });
 
-test('entry-routes: 集計は経路合計に対する割合とクリック→追加率を出す', () => {
+test('entry-routes: 集計はアカウント内の友だち数で割合を出し、申込数は funnel から取る', () => {
   const routes = [
     { key: 'ig_story', refCode: 'ig_story', name: 'ストーリー' },
     { key: 'ig_reel', refCode: 'ig_reel', name: 'リール' },
   ];
-  const s = summarize(routes, {
-    ig_story: { click_count: 100, friend_add_count: 30, form_submission_count: 3 },
-    ig_reel: { click_count: 40, friend_add_count: 10, form_submission_count: 0 },
+  const s = summarize(routes, [{ refCode: 'ig_story', friendCount: 30 }, { refCode: 'ig_reel', friendCount: 10 }, { refCode: 'other', friendCount: 99 }], {
+    ig_story: { friend_add_count: 60, form_submission_count: 3 },
   });
   assert.equal(s.totalAdds, 40);
+  assert.equal(s.rows[0].adds, 30);
   assert.equal(s.rows[0].share, 75);
   assert.equal(s.rows[1].share, 25);
-  assert.equal(s.rows[0].addRate, 30);
+  assert.equal(s.rows[0].forms, 3);
+  assert.equal(s.rows[0].applyRate, 10);
   const text = formatStats(s);
   assert.match(text, /ストーリー/);
   assert.match(text, /合計 友だち追加: 40 人/);
   // 0 件でも割り算で落ちない
-  const empty = summarize(routes, {});
+  const empty = summarize(routes, [], {});
   assert.equal(empty.totalAdds, 0);
   assert.equal(empty.rows[0].share, 0);
-  assert.equal(empty.rows[0].addRate, null);
+  assert.equal(empty.rows[0].applyRate, null);
 });

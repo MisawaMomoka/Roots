@@ -12,6 +12,8 @@
 // 文面中のプレースホルダー:
 //   __BOOKING_URL__        .env の BOOKING_URL
 //   __LECTURE_LINK__       トラッキングリンク "lecturePage" の配信用 URL
+//   __LECTURE_LINK_SRC__   講義ページ直リンク + ?src={{ref}}（流入元を申込ページまで引き継ぐ。配信時に L Harness が ref を展開）
+//   __API_URL__            Worker の URL（LINE_HARNESS_API_URL）
 //   __LECTURE_PAGE_URL__   .env の LECTURE_PAGE_URL（トラッキングリンクの飛び先）
 //   __FORM_ID_<key>__      作成したフォームの ID（{{form_url:__FORM_ID_apply__}} のように使う）
 //   __LINE2_CHANNEL_ID__ / __THUMB_URL__ / __THUMB_ASPECT__   .env.line1 の値（LINE1 の誘導 Flex 用）
@@ -317,8 +319,11 @@ export async function applyAll({ api, config, assets, env = {}, lineAccountId, w
     messagesDir: config.messagesDir ?? null,
     tagIds: {},
     placeholders: {
+      API_URL: env.LINE_HARNESS_API_URL ? env.LINE_HARNESS_API_URL.replace(/\/+$/, '') : undefined,
       BOOKING_URL: env.BOOKING_URL,
       LECTURE_PAGE_URL: env.LECTURE_PAGE_URL,
+      // 講義ページの直リンクに流入元（LINE1 の ref）を付けて渡す。申込ページがカレンダーのメモに「流入元」を書くために使う
+      LECTURE_LINK_SRC: env.LECTURE_PAGE_URL ? `${env.LECTURE_PAGE_URL}?src={{ref}}` : undefined,
       LINE2_CHANNEL_ID: env.LINE2_CHANNEL_ID,
       THUMB_URL: env.THUMB_URL,
       THUMB_ASPECT: env.THUMB_ASPECT || '16:9',

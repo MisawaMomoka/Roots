@@ -17,7 +17,8 @@
   "accountLiffId": "2011653383-oiECpx5P",
   "apiUrl": "https://roots-line.re-tro.workers.dev",
   "formId": "1b347a3d-5405-4673-902a-fff438fd5091",
-  "menuName": "個別相談会（オンライン・60分）",
+  "menuName": "個別診断会",
+  "sourceLabels": { "ig_story": "Instagram ストーリー", "ig_reel": "Instagram リール", "cross-link": "LINE1 から（経路不明）", "": "不明" },
 
   "title": "やせ習慣1Day講義 個別相談会 申し込みページ",
   "intro": "LINE登録者限定で、1回60分の無料個別相談会を開催しています。\n下記のカレンダーより、ご希望の日時を選択しご予約ください。",
@@ -267,6 +268,19 @@
     return { data: data, missing: missing };
   }
 
+  // ---------- 流入元（LINE の配信リンクに ?src=<ref> で付いてくる） ----------
+  function sourceCode() {
+    var q = new URLSearchParams(location.search);
+    var v = q.get('src');
+    if (!v && q.get('liff.state')) { try { v = new URLSearchParams(q.get('liff.state').replace(/^[^?]*\?/, '')).get('src'); } catch (e) {} }
+    return (v || '').trim();
+  }
+  function sourceLabel(code) {
+    var m = cfg.sourceLabels || {};
+    if (Object.prototype.hasOwnProperty.call(m, code)) return m[code];
+    return code || '不明';
+  }
+
   // ---------- LIFF ----------
   function initLiff() {
     if (!window.liff || !cfg.liffId) return Promise.reject(new Error('liff'));
@@ -306,6 +320,14 @@
     var token = null; try { token = liff.getIDToken(); } catch (e) {}
     if (!token) { btn.disabled = false; msg.className = 'msg err'; msg.textContent = 'LINE のログイン情報を確認できませんでした。開き直してください。'; return; }
     var data = Object.assign({}, pending, { booking_datetime: label(chosen.date, chosen.start), booking_staff: chosen.staffName });
+    // カレンダーの予定メモ（L Harness は customer_note を「メモ:」としてそのまま Google カレンダーに書く）
+    var src = sourceCode();
+    var noteLines = ['[申込者情報]'];
+    fields.forEach(function (f) { var v = pending[f.name]; noteLines.push((f.label || f.name) + '：' + (Array.isArray(v) ? v.join('、') : (v || '—'))); });
+    noteLines.push('流入元：' + sourceLabel(src) + (src ? '（' + src + '）' : ''));
+    noteLines.push('希望日時：' + label(chosen.date, chosen.start));
+    var customerNote = noteLines.join('\n');
+    data.source = src;
     // (1) フォーム回答を保存（タグ付与・お礼メッセージ） → (2) 予約リクエスト
     fetch(api + '/api/forms/' + encodeURIComponent(cfg.formId) + '/submit', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ data: data })
@@ -314,7 +336,7 @@
       return fetch(api + '/api/liff/booking/requests?liffId=' + encodeURIComponent(cfg.accountLiffId), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'Idempotency-Key': (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()) },
-        body: JSON.stringify({ menu_id: menuId, staff_id: chosen.staffId, starts_at: jstIso(chosen.date, chosen.start), customer_note: '講義ページから申込' })
+        body: JSON.stringify({ menu_id: menuId, staff_id: chosen.staffId, starts_at: jstIso(chosen.date, chosen.start), customer_note: customerNote })
       }).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error('booking:' + (j && j.error || r.status)); return j; }); });
     })
     .then(function () {
