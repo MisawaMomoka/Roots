@@ -115,7 +115,8 @@ GitHub の混雑時は実行が 10 分以上遅れることがある（お礼・
 3. Actions タブ → 「line-harness sync (lecture)」→ **Run workflow** で手動実行し、緑のチェックになるのを確認する。ログの最終行が `承認 n / 登録 {...} / スキップ n / エラー n`。
 4. 以後は 5 分おきに自動実行。Actions タブで赤（失敗）が続いたら Secret を疑う。
 
-注意：公開リポジトリでは **60 日間コミットがないと schedule が自動停止**する（Actions タブに警告が出る）。止まったら「Enable workflow」で再開する。
+注意：既定ブランチを切り替えた直後は schedule が登録されず、次に既定ブランチへ push があるまで定期実行が始まらないことがある。Actions タブに「Scheduled」の実行が 15 分以上出ないときは、何か 1 コミット push する（このファイルの更新でよい）。
+また、公開リポジトリでは **60 日間コミットがないと schedule が自動停止**する（Actions タブに警告が出る）。止まったら「Enable workflow」で再開する。
 `config/assets.json` は `.gitignore` 済みなので、Meet リンクを変えたら Secret `ASSETS_JSON` も更新する。
 
 ### 選択肢C：L Harness プラグイン（Cloudflare Worker の cron）に移植
