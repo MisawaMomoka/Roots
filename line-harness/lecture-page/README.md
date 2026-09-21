@@ -101,3 +101,15 @@ npx wrangler pages deploy . --project-name roots-lecture --branch main
 
 L Harness の予約（サロン型）は Google カレンダーに予定を作るが、Meet のリンクは自動発行しない。
 担当者ごとに **固定の Meet リンク**（Google Meet →「新しい会議を作成」→「後で使う会議を作成」）を作り、`config/assets.json` の `staffMeetingUrls` に入れる。当日2時間前の LINE にそのリンクが差し込まれる。
+
+## 申込時のエラーの見分け方
+
+送信時のエラー文の末尾に括弧で原因コードが出る。
+
+| 括弧内 | 意味 | 直し方 |
+|---|---|---|
+| `form:Unauthorized` / `booking:Unauthorized` | LIFF の ID トークンを Worker が検証できない | 管理画面 → LINEアカウント → LINE2 の「LINE Login チャネルID」が LIFF のチャネル（`2011653383`）になっているか。ページを長時間開いたままだとトークン期限切れになるので、LINE から開き直す |
+| `form:Friend not found` / `booking:Friend not found` | ログインした LINE ユーザーが L Harness の友だちにいない | LINE Login チャネルと Messaging API チャネルが **同じプロバイダー** にあるか（別だとユーザー ID が食い違う）。管理画面の友だち一覧に自分がいるか |
+| `booking:slot_conflict` | 直前に枠が埋まった | 別の枠を選ぶ（画面が自動で戻る） |
+| `form:...`（その他） | フォームの必須項目や形式 | 管理画面のフォーム設定を確認 |
+
