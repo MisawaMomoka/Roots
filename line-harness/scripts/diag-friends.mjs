@@ -16,8 +16,8 @@ for (const a of accounts) console.log(`  ${a.id.slice(0, 8)}  ${a.name ?? ''}  M
 
 const limit = Number(args.get('limit') ?? 50);
 const res = await api('GET', '/api/friends', { query: { limit, sort: 'recent', includeTags: 'true' } });
-const friends = res.data ?? res.friends ?? [];
-console.log(`\n友だち（直近 ${friends.length} 人）:`);
+const friends = res?.data?.items ?? res?.data ?? res?.friends ?? [];
+console.log(`\n友だち（直近 ${friends.length} 人 / 全 ${res?.data?.total ?? '?'} 人）:`);
 console.log('  登録日時            所属       流入元(ref)     LINEユーザーID  名前 / タグ');
 for (const f of friends) {
   const acc = f.lineAccountId ? (accName.get(f.lineAccountId) ?? f.lineAccountId.slice(0, 8)) : '(なし)';
