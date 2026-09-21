@@ -99,14 +99,21 @@ test('講義設定: skipIfTag が tag_not_exists 条件になり、フォーム�
     tagIds: { watched: 'tg-w', applied: 'tg-a', confirmed: 'tg-c' },
     placeholders: { BOOKING_URL: 'https://liff.line.me/2-y?page=book', LECTURE_LINK: 'https://w/t/abc', LECTURE_LINK_SRC: 'https://liff.line.me/2-z?src={{ref}}', FORM_ID_apply: 'form-1', BONUS1_URL: 'https://youtu.be/b1', BONUS2_URL: 'https://youtu.be/b2' },
   };
-  const drip = buildStepPayloads(lecture.scenarios.drip, ctx);
-  assert.equal(drip[0].conditionType, undefined);
-  assert.equal(drip[1].conditionType, 'tag_not_exists');
-  assert.equal(drip[1].conditionValue, 'tg-a');
-  assert.deepEqual(drip.map((s) => [s.offsetDays, s.deliveryTime]), [[0, '00:00'], [0, '21:00'], [1, '08:00'], [1, '20:00'], [2, '20:00']]);
+  // 友だち追加直後（相対）: 0 分にあいさつ＋講義リンク、60 分後に「講義ページを開いていない人」だけ見どころ
+  const welcome = buildStepPayloads(lecture.scenarios.welcome, ctx);
+  assert.deepEqual(welcome.map((s) => s.delayMinutes), [0, 60]);
+  assert.equal(welcome[0].conditionType, undefined);
+  assert.equal(welcome[1].conditionType, 'tag_not_exists');
+  assert.equal(welcome[1].conditionValue, 'tg-w');
   // 講義リンクは流入元を引き継ぐ直リンク（?src={{ref}}）。配信時に L Harness が {{ref}} を展開する
-  assert.ok(drip[0].messageContent.includes('https://liff.line.me/2-z?src={{ref}}'));
-  assert.ok(drip[1].messageContent.includes('{{form_url:form-1}}'));
+  assert.ok(welcome[0].messageContent.includes('https://liff.line.me/2-z?src={{ref}}'));
+  assert.ok(welcome[1].messageContent.includes('{{form_url:form-1}}'));
+  // 翌日以降（時刻指定）: 教育・締切・最終日。申込済みなら送らない
+  const drip = buildStepPayloads(lecture.scenarios.drip, ctx);
+  assert.deepEqual(drip.map((s) => [s.offsetDays, s.deliveryTime, s.conditionValue]), [[1, '08:00', 'tg-a'], [1, '20:00', 'tg-a'], [2, '20:00', 'tg-a']]);
+  // 「開いた」記録用フォームは項目なし・タグ watched
+  assert.deepEqual(lecture.forms.opened.fields, []);
+  assert.equal(lecture.forms.opened.onSubmitTag, 'watched');
   const bonus = buildStepPayloads(lecture.scenarios.bonus, ctx);
   assert.equal(bonus[0].delayMinutes, 60);
   assert.ok(bonus[0].messageContent.includes('https://youtu.be/b1') && bonus[0].messageContent.includes('https://youtu.be/b2'));
@@ -162,14 +169,19 @@ test('講義設定 applyAll: タグ → フォーム → リンク → シナリ
   const applied = state.scenarios.find((s) => s.name === '講義_申込後フォロー');
   assert.equal(applied.triggerType, 'tag_added');
   assert.equal(applied.triggerTagId, r1.tagIds.applied);
-  const drip = state.scenarios.find((s) => s.name === '講義_友だち追加ステップ');
-  assert.ok(state.steps[drip.id][0].messageContent.includes("https://roots-lecture.pages.dev?src={{ref}}"));
-  assert.ok(state.steps[drip.id][1].messageContent.includes(`{{form_url:${state.forms[0].id}}}`));
+  const welcome = state.scenarios.find((s) => s.name === '講義_友だち追加直後（相対）');
+  assert.equal(welcome.deliveryMode, 'relative');
+  assert.ok(state.steps[welcome.id][0].messageContent.includes("https://roots-lecture.pages.dev?src={{ref}}"));
+  assert.ok(state.steps[welcome.id][1].messageContent.includes(`{{form_url:${state.forms[0].id}}}`));
+  assert.equal(state.steps[welcome.id][1].conditionValue, r1.tagIds.watched);
+  const opened = state.forms.find((f) => f.name === '講義_視聴ページを開いた（自動）');
+  assert.equal(opened.onSubmitTagId, r1.tagIds.watched);
+  assert.equal(r1.formIds.opened, opened.id);
 
   const before = writes.length;
   await applyAll(ctx);
-  // 2回目: フォームは内容比較をせず PUT で同期する（1件）。それ以外の書き込みは無い
-  assert.deepEqual(writes.slice(before), ['PUT /api/forms/' + state.forms[0].id]);
+  // 2回目: フォームは内容比較をせず PUT で同期する（2件）。それ以外の書き込みは無い
+  assert.deepEqual(writes.slice(before), ['PUT /api/forms/' + state.forms[0].id, 'PUT /api/forms/' + state.forms[1].id]);
 });
 
 test('ensureBooking: 担当者ごとの受付時間があればそれを使い、無ければ共通設定を使う', async () => {

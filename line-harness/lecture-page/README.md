@@ -124,3 +124,8 @@ L Harness の予約（サロン型）は Google カレンダーに予定を作�
 L Harness の最短受付時間は 60 分固定で管理画面からは変えられない。代わりに `<script id="config">` の `minLeadHours`（既定 24）で、
 「今から N 時間後より前の枠」をカレンダーに出さないようにしている。変えたら配備し直す。
 
+## 「講義ページを開いた」の記録（index.html）
+
+`<script id="config">` の `openedFormId` に、`apply:lecture` の出力 `formIds.opened` の ID を貼る。LINE アプリ内で開かれたとき、本人の LINE 情報付きで空フォームを送信してタグ `講義_視聴ページを開いた` を付ける（1 端末 1 回）。
+このタグがある人には、友だち追加 60 分後の「見どころ」メッセージを送らない。
+

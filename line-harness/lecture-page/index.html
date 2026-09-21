@@ -10,6 +10,7 @@
   講義動画ページ（1ページ目）：視聴期限 → 動画（自動再生・音の有効化）→ 参加ボタン → 2ページ目（booking.html：カレンダー＋フォーム）
   設定は <script id="config"> の JSON だけ。手順は README.md
 -->
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script id="config" type="application/json">
 {
   "title": "やせ習慣1Day講義",
@@ -26,6 +27,10 @@
   "ctaLabel": "【先着20名】無料で参加する",
   "ctaNote": "※枠が埋まり次第無料での開催は終了します",
   "bookingPage": "booking.html",
+
+  "liffId": "2011653383-ta1zojXE",
+  "apiUrl": "https://roots-line.re-tro.workers.dev",
+  "openedFormId": "",
 
   "bonusTitle": "特典動画",
   "bonus": []
@@ -155,6 +160,22 @@
     }
     return undefined;
   }
+
+  // 「講義ページを開いた」を L Harness に記録（空のフォームを本人の LINE 情報付きで送る → タグが付く）。
+  // LINE アプリ内で開いたときだけ動く。失敗しても表示には影響させない。1 端末 1 回。
+  (function markOpened() {
+    if (!window.liff || !cfg.liffId || !cfg.openedFormId || !cfg.apiUrl) return;
+    var key = 'roots_opened_' + cfg.openedFormId;
+    try { if (localStorage.getItem(key)) return; } catch (e) {}
+    liff.init({ liffId: cfg.liffId }).then(function () {
+      if (!liff.isLoggedIn()) return;
+      var d = null; try { d = liff.getDecodedIDToken(); } catch (e) {}
+      if (!d || !d.exp || d.exp * 1000 < Date.now() + 60000) return; // 期限切れなら記録は諦める（ログインは強制しない）
+      return fetch(cfg.apiUrl.replace(/\/+$/, '') + '/api/forms/' + encodeURIComponent(cfg.openedFormId) + '/submit', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + liff.getIDToken() }, body: JSON.stringify({ data: {} })
+      }).then(function (r) { if (r.ok) { try { localStorage.setItem(key, String(Date.now())); } catch (e) {} } });
+    }).catch(function () {});
+  })();
 
   var player = mountVideo(cfg.video, $('video'), { autoplay: true, track: true, title: cfg.title });
   if (player === undefined) { $('videoWrap').classList.add('hidden'); $('speedNote').classList.add('hidden'); $('setupNote').classList.remove('hidden'); unlock(); }

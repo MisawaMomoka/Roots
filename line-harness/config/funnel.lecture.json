@@ -144,29 +144,42 @@
       "onSubmitTag": "applied",
       "onSubmitMessageFile": "apply-thanks.txt",
       "saveToMetadata": true
+    },
+    "opened": {
+      "$comment": "講義ページ（index.html）が開かれた瞬間に自動送信される『空のフォーム』。送信でタグ 講義_視聴ページを開いた が付き、未視聴フォローの skipIfTag に使う。apply 後に出る formIds.opened を index.html の openedFormId に貼る",
+      "name": "講義_視聴ページを開いた（自動）",
+      "description": "講義動画ページを開いた記録用（お客さまには見えない）",
+      "fields": [],
+      "onSubmitTag": "watched",
+      "saveToMetadata": false
     }
   },
   "scenarios": {
-    "drip": {
-      "name": "講義_友だち追加ステップ",
-      "description": "友だち追加 → 講義動画ページ → 教育 → 申込の後押し（亀さん型）。申込済みの人には後押しを送らない",
+    "welcome": {
+      "name": "講義_友だち追加直後（相対）",
+      "description": "友だち追加の瞬間にあいさつ＋講義リンク。1 時間たっても講義ページを開いていない人にだけ見どころを送る",
       "triggerType": "friend_add",
-      "deliveryMode": "absolute_time",
+      "deliveryMode": "relative",
       "steps": [
         {
           "type": "text",
           "file": "drip-00-welcome.txt",
-          "offsetDays": 0,
-          "deliveryTime": "00:00",
-          "$comment": "00:00 は『登録時刻が過ぎているので即時』の意味（absolute_time は過去時刻を今に丸める）"
+          "delayMinutes": 0
         },
         {
           "type": "text",
           "file": "drip-01-highlights.txt",
-          "offsetDays": 0,
-          "deliveryTime": "21:00",
-          "skipIfTag": "applied"
-        },
+          "delayMinutes": 60,
+          "skipIfTag": "watched"
+        }
+      ]
+    },
+    "drip": {
+      "name": "講義_友だち追加ステップ",
+      "description": "翌日以降の教育・締切メッセージ（時刻指定）。あいさつと未視聴フォローは「講義_友だち追加直後（相対）」側",
+      "triggerType": "friend_add",
+      "deliveryMode": "absolute_time",
+      "steps": [
         {
           "type": "text",
           "file": "drip-02-education.txt",
