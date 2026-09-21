@@ -48,7 +48,13 @@ export function buildStepContent(step, ctx) {
     return { messageType: 'text', messageContent: fillPlaceholders(content, ctx, step.file) };
   }
   if (step.type === 'flex') {
-    const json = fillPlaceholders(readMessageFile(step.file, dir), ctx, step.file);
+    // textFile があれば、その本文を JSON 文字列として __GREETING__ に埋め込む（Flex 1 通に文章を同梱するため）
+    let template = readMessageFile(step.file, dir);
+    if (step.textFile) {
+      const text = readMessageFile(step.textFile, dir).replace(/\s+$/, '');
+      template = template.replaceAll('__GREETING__', JSON.stringify(text).slice(1, -1));
+    }
+    const json = fillPlaceholders(template, ctx, step.file);
     return { messageType: 'flex', messageContent: JSON.stringify(JSON.parse(json)) };
   }
   if (step.type === 'video') {

@@ -1,16 +1,15 @@
 {
-  "$comment": "LINE1（理駆・既存）用。友だち追加の直後にサムネイル＋受け取りボタンを送り、LINE2（講義）へ誘導するだけ。apply.mjs --env=.env.line1 --config=config/funnel.line1.json",
+  "$comment": "LINE1（理駆・既存）用。友だち追加の直後に 1 通の Flex（あいさつ文＋サムネイル＋受け取りボタン）で LINE2（講義）へ誘導するだけ。即時ステップは 1 通目しか友だち追加の瞬間に送られない（2 通目以降は cron 待ちで数分遅れる）ので、必ず 1 ステップにまとめる。apply.mjs --env=.env.line1 --config=config/funnel.line1.json",
   "messagesDir": "line1",
   "tags": [],
   "scenarios": {
     "invite": {
       "name": "講義_LINE2への誘導",
-      "description": "友だち追加直後。短い一言 → サムネイル付きの受け取りボタン（LINE2 の友だち追加リンク）",
+      "description": "友だち追加直後。あいさつ文＋サムネイル＋受け取りボタン（LINE2 の友だち追加リンク）を 1 通の Flex で同時に送る",
       "triggerType": "friend_add",
       "deliveryMode": "relative",
       "steps": [
-        { "type": "text", "file": "invite-01.txt", "delayMinutes": 0 },
-        { "type": "flex", "file": "invite.flex.json", "delayMinutes": 0 }
+        { "type": "flex", "file": "invite.flex.json", "textFile": "invite-01.txt", "delayMinutes": 0 }
       ]
     }
   }
