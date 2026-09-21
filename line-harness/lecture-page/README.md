@@ -119,3 +119,8 @@ L Harness の予約（サロン型）は Google カレンダーに予定を作�
 流入元は URL の `?src=<ref>`（LINE の配信リンクに付く）から取り、`<script id="config">` の `sourceLabels` で表示名に変換する（未登録のコードはそのまま表示）。
 経路を増やしたら `sourceLabels` にも 1 行足して配備し直す。
 
+## 予約できる最短時間
+
+L Harness の最短受付時間は 60 分固定で管理画面からは変えられない。代わりに `<script id="config">` の `minLeadHours`（既定 24）で、
+「今から N 時間後より前の枠」をカレンダーに出さないようにしている。変えたら配備し直す。
+

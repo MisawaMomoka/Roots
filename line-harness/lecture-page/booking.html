@@ -23,6 +23,7 @@
   "title": "やせ習慣1Day講義 個別相談会 申し込みページ",
   "intro": "LINE登録者限定で、1回60分の無料個別相談会を開催しています。\n下記のカレンダーより、ご希望の日時を選択しご予約ください。",
   "daysAhead": 28,
+  "minLeadHours": 24,
   "submitLabel": "申込内容を確認",
   "confirmLabel": "この内容で申し込む",
   "thanksTitle": "お申し込みありがとうございます",
@@ -171,8 +172,11 @@
     var u = api + '/api/liff/booking/availability?liffId=' + encodeURIComponent(cfg.accountLiffId) + '&menu_id=' + encodeURIComponent(menuId) + '&from=' + rangeFrom + '&to=' + rangeTo;
     return fetch(u).then(function (r) { return r.json(); }).then(function (j) {
       byDate = {};
+      // 直近すぎる枠は出さない（既定 24 時間後以降）。L Harness 側の最短受付は 60 分固定なので、ページ側で絞る
+      var earliest = Date.now() + (Number(cfg.minLeadHours) || 0) * 3600000;
       (j.by_staff || []).forEach(function (s) {
         (s.slots || []).forEach(function (sl) {
+          if (new Date(jstIso(sl.date, sl.start)).getTime() < earliest) return;
           var key = sl.date; byDate[key] = byDate[key] || {};
           // 同じ時間に複数の担当者が空いていれば、最初の人に割り当てる（お客さまは担当者を選ばない）
           if (!byDate[key][sl.start]) byDate[key][sl.start] = { staffId: s.staff_id, staffName: s.display_name, end: sl.end };
