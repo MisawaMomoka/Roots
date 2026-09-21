@@ -61,14 +61,26 @@ export function createApi({ apiUrl, apiKey, dryRun = false, log = console.log, f
       log(`[dry-run] ${method} ${url.pathname}${url.search}${body ? ' ' + JSON.stringify(body) : ''}`);
       return null;
     }
-    const res = await fetchImpl(url, {
+    const init = {
       method,
       headers: {
         Authorization: `Bearer ${apiKey}`,
         ...(body ? { 'Content-Type': 'application/json' } : {}),
       },
       body: body ? JSON.stringify(body) : undefined,
-    });
+    };
+    // 「fetch failed」（DNS・回線の一時的な不調）は 2 秒→4 秒→8 秒あけて最大 3 回やり直す
+    let res;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        res = await fetchImpl(url, init);
+        break;
+      } catch (err) {
+        if (attempt >= 3) throw new Error(`${method} ${path}: 接続できませんでした（${err?.cause?.code ?? err?.message ?? err}）。回線・VPN・LINE_HARNESS_API_URL を確認してください`);
+        log(`接続に失敗（${err?.cause?.code ?? err?.message ?? err}）。${2 ** (attempt + 1)} 秒後にやり直します…`);
+        await new Promise((r) => setTimeout(r, 2 ** (attempt + 1) * 1000));
+      }
+    }
     const text = await res.text();
     let parsed;
     try { parsed = text ? JSON.parse(text) : null; } catch { parsed = text; }
