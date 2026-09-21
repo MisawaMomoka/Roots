@@ -1,5 +1,5 @@
 {
-  "$comment": "LINE1（理駆・既存）用。友だち追加の直後にサムネイル＋受け取りボタンを送り、LINE2（講義）へ誘導するだけ。L Harness は即時ステップを 1 通目しか友だち追加の瞬間に送れない（2 通目以降は cron 待ちで遅れる）ので、あいさつ文（invite-01.txt）は LINE 側の「あいさつメッセージ」で送り、ここは Flex 1 通だけにする。apply.mjs --env=.env.line1 --config=config/funnel.line1.json",
+  "$comment": "LINE1（理駆・既存）用。L Harness では『流入経路（entry-routes.mjs）』と、停止中の誘導シナリオ定義だけを持つ。誘導カードは LINE 側のあいさつメッセージで送る（LINE1 の Webhook は OFF）。L Harness は即時ステップを 1 通目しか友だち追加の瞬間に送れない（2 通目以降は cron 待ちで遅れる）ので、あいさつ文（invite-01.txt）は LINE 側の「あいさつメッセージ」で送り、ここは Flex 1 通だけにする。apply.mjs --env=.env.line1 --config=config/funnel.line1.json",
   "messagesDir": "line1",
   "tags": [
     { "key": "ig_story", "name": "流入_IGストーリー", "color": "#E1306C" },
@@ -14,6 +14,8 @@
     "invite": {
       "name": "講義_LINE2への誘導",
       "description": "友だち追加直後にサムネイル付きの受け取りボタン（LINE2 の友だち追加リンク）。あいさつ文は LINE公式アカウントマネージャーの「あいさつメッセージ」で送る（messages/line1/invite-01.txt を貼る）",
+      "$activeComment": "停止中。LINE1 と LINE2 は同じプロバイダーで LINE ユーザーIDが同一のため、L Harness は 1 人 1 行で管理し、LINE1 の Webhook イベントが来るたびに『その人は LINE1 の友だち』に切り替わって LINE2 の予約・配信が止まる。対策として LINE1 の Webhook を OFF にし、誘導カードは LINE 公式アカウントマネージャーのあいさつメッセージ（カードタイプ／リッチメッセージ）で送る。04-lecture-funnel.md 参照",
+      "active": false,
       "triggerType": "friend_add",
       "deliveryMode": "relative",
       "steps": [

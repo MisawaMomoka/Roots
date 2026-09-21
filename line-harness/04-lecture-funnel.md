@@ -39,24 +39,32 @@ LINE2 友だち追加
 
 ## LINE1 側に置くもの（`config/funnel.line1.json`）
 
-LINE1 を友だち追加した直後に、2通で LINE2 へ誘導する。
+**LINE1 の Webhook は L Harness に向けない（OFF）。誘導カードは LINE 公式アカウントマネージャーの「あいさつメッセージ」で送る。**
 
 | # | タイミング | 内容 |
 |---|---|---|
-| 1 | 友だち追加 直後 | あいさつ文（`messages/line1/invite-01.txt`）。**L Harness ではなく LINE公式アカウントマネージャーの「あいさつメッセージ」に貼る**（`{Nickname}` が名前に置き換わる） |
-| 2 | 同・直後 | サムネイル画像＋「やせ習慣1Day講義」＋緑のボタン「講義を受け取る（無料）」（`messages/line1/invite.flex.json`、L Harness のシナリオ） |
+| 1 | 友だち追加 直後 | あいさつ文（`messages/line1/invite-01.txt` の文面。`{Nickname}` が名前に置き換わる） |
+| 2 | 同・直後（同じあいさつメッセージ内） | サムネイル画像のカード（カードタイプメッセージ または リッチメッセージ）。タップ先は `https://roots-line.re-tro.workers.dev/auth/line?account=2011652832` |
 
-> なぜ分けるか：L Harness は「即時（0分）」のステップを **1 通目だけ** 友だち追加の瞬間に返信し、2 通目以降は定期実行（cron）が拾うため遅れて届きます。あいさつ文を LINE 側のあいさつメッセージにすると、LINE が友だち追加と同時に送るので、Flex カードとほぼ同時（あいさつ文 → カードの順）に届きます。
+### なぜ LINE1 を L Harness で配信しないか（重要）
 
-画像とボタンのリンク先は `{{auth_url:2011652832}}`。配信時に「本人のIDが付いた LINE2 の友だち追加リンク」に展開され、LINE1 と LINE2 で同一人物として紐づく。
-LP や他媒体からは `https://roots-line.re-tro.workers.dev/auth/line?account=2011652832&ref=lp` の形で貼る（`ref` で流入元を分ける）。
+LINE1 と LINE2 は **同じプロバイダー**にあり、LINE ユーザー ID が同一。L Harness は LINE ユーザー ID ごとに友だちを **1 行**で管理し、その行の「所属アカウント」は **Webhook イベントを最後に受け取ったアカウント** に切り替わる（friends.line_account_id）。
+LINE1 の Webhook を L Harness に向けていると、LINE2 の友だちになった後でも LINE1 で何かイベント（メッセージ、再追加など）が起きた瞬間に「LINE1 の友だち」に戻り、
 
-反映：`.env.line1.example` → `.env.line1`（LINE1 の `LINE_HARNESS_ACCOUNT_ID` とサムネイル URL を入れる）→ `pnpm apply:line1`。
-**LINE1 のアカウントIDは必ず入れる**（空だと「全アカウント共通」のシナリオになり、LINE2 の友だち追加でも発火してしまう）。
+- 申込ページの予約が `friend_not_found`（予約 API は LINE2 の友だちしか探さない）
+- フォームのお礼が LINE1 から届く
+- LINE2 のステップ配信が「対象アカウントの友だちでない」として一時停止
 
-サムネイル画像は `lecture-page/` フォルダに `thumb.jpg` として置いて一緒に配備すると `https://roots-lecture.pages.dev/thumb.jpg` で使える（1MB 以下、横長なら 16:9）。
+という不具合になる。LINE1 の Webhook を OFF にすれば L Harness に届くイベントは LINE2 だけになり、行は LINE2 に留まる。
+インフルエンサー用リンク（`/auth/line?account=<LINE1>&ref=…`）は Webhook なしでも動く（OAuth 側で友だち行と `ref_code`・タグを作る）。その後 LINE2 を追加すると同じ行が LINE2 所属になり、`ref_code` は最初の経路のまま残る（`{{ref}}` で使える）。
 
----
+`funnel.line1.json` の誘導シナリオは `"active": false` で停止した定義として残してある（`apply:line1` を実行すると停止状態に揃える）。
+
+### LINE 公式アカウントマネージャーでの設定（LINE1）
+
+1. 設定 → Messaging API →「Webhook の利用」を **オフ**（または LINE Developers → LINE1 の Messaging API チャネル → Webhook設定 → 「Webhookの利用」オフ）。
+2. ホーム → あいさつメッセージ → オン。1 通目にテキスト（`invite-01.txt`）、2 通目に **カードタイプメッセージ**（イメージ：`lecture-page/thumb.jpg`、ボタン「講義を受け取る（無料）」→ 上の URL）または **リッチメッセージ**（画像全面タップ → 上の URL）。
+3. 応答メッセージはオフのまま。
 
 ### 流入経路ごとの友だち追加リンク（ストーリー／リール）
 

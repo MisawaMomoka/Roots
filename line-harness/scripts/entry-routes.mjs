@@ -45,14 +45,17 @@ export async function ensureEntryRoutes(api, routes, tagIds, log) {
   return ids;
 }
 
-/** 経路ごとの集計行。adds は LINE1 アカウント内の友だち数（ref-stats）、forms は funnel の申込数。割合は一覧の合計に対する比率 */
-export function summarize(routes, refStats, funnels = {}) {
-  const countByRef = new Map((refStats ?? []).map((r) => [r.refCode, Number(r.friendCount ?? 0)]));
-  const rows = routes.map((r) => ({
-    key: r.key, name: r.name, refCode: r.refCode,
-    adds: countByRef.get(r.refCode) ?? 0,
-    forms: Number(funnels[r.key]?.form_submission_count ?? 0),
-  }));
+/** 経路ごとの集計行。L Harness は同一 LINE ユーザーを 1 行で管理するので funnel の値をそのまま使う。割合は一覧の合計に対する比率 */
+export function summarize(routes, funnels = {}) {
+  const rows = routes.map((r) => {
+    const f = funnels[r.key] ?? {};
+    return {
+      key: r.key, name: r.name, refCode: r.refCode,
+      clicks: Number(f.click_count ?? 0),
+      adds: Number(f.friend_add_count ?? 0),
+      forms: Number(f.form_submission_count ?? 0),
+    };
+  });
   const totalAdds = rows.reduce((s, x) => s + x.adds, 0);
   for (const x of rows) {
     x.share = totalAdds ? Math.round((x.adds / totalAdds) * 1000) / 10 : 0;
@@ -63,10 +66,10 @@ export function summarize(routes, refStats, funnels = {}) {
 
 export function formatStats({ rows, totalAdds }) {
   const lines = ['経路別の友だち追加（割合は経路合計に対する比率）', ''];
-  lines.push('  経路                                 友だち追加   割合     申込');
+  lines.push('  経路                                 クリック   友だち追加   割合     申込');
   for (const x of rows) {
     const rate = x.applyRate === null ? '' : `（追加→申込 ${x.applyRate}%）`;
-    lines.push(`  ${x.name.padEnd(30, '　').slice(0, 30)}  ${String(x.adds).padStart(8)}   ${String(x.share + '%').padStart(6)}   ${String(x.forms).padStart(4)}  ${rate}`);
+    lines.push(`  ${x.name.padEnd(30, '　').slice(0, 30)}  ${String(x.clicks).padStart(6)}   ${String(x.adds).padStart(8)}   ${String(x.share + '%').padStart(6)}   ${String(x.forms).padStart(4)}  ${rate}`);
   }
   lines.push('', `  合計 友だち追加: ${totalAdds} 人`);
   return lines.join('\n');
@@ -101,9 +104,7 @@ async function main() {
       if (!found) { console.warn(`未作成: ${r.name}（先に --stats なしで実行）`); continue; }
       funnels[r.key] = (await api('GET', `/api/entry-routes/${found.id}/funnel`)).data ?? {};
     }
-    // 友だち追加数はこのアカウント（LINE1）内だけを数える。ref は LINE2 にも引き継ぐので、全体集計だと二重に数えてしまう
-    const refStats = (await api('GET', '/api/friends/ref-stats', { query: { lineAccountId: accountId } })).routes ?? [];
-    console.log(formatStats(summarize(routes, refStats, funnels)));
+    console.log(formatStats(summarize(routes, funnels)));
     return;
   }
 

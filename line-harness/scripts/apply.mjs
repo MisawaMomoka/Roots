@@ -201,7 +201,7 @@ export async function ensureScenario(api, key, scenario, ctx, log) {
         triggerType: scenario.triggerType,
         ...(triggerTagId ? { triggerTagId } : {}),
         deliveryMode: scenario.deliveryMode ?? 'relative',
-        isActive: true,
+        isActive: scenario.active !== false,
         ...(lineAccountId ? { lineAccountId } : {}),
       },
     });
@@ -212,16 +212,17 @@ export async function ensureScenario(api, key, scenario, ctx, log) {
     }
     found = created.data;
   } else {
+    const wantActive = scenario.active !== false; // 設定の "active": false で停止（既定は有効）
     const needsUpdate =
       found.triggerType !== scenario.triggerType ||
-      !found.isActive ||
+      Boolean(found.isActive) !== wantActive ||
       (triggerTagId && found.triggerTagId !== triggerTagId);
     if (needsUpdate) {
       await api('PUT', `/api/scenarios/${found.id}`, {
         body: {
           triggerType: scenario.triggerType,
           ...(triggerTagId ? { triggerTagId } : {}),
-          isActive: true,
+          isActive: wantActive,
           description: scenario.description,
         },
       });
