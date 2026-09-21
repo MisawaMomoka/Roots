@@ -97,7 +97,7 @@ test('講義設定: skipIfTag が tag_not_exists 条件になり、フォーム�
   const ctx = {
     assets: null, messagesDir: lecture.messagesDir,
     tagIds: { watched: 'tg-w', applied: 'tg-a', confirmed: 'tg-c' },
-    placeholders: { BOOKING_URL: 'https://liff.line.me/2-y?page=book', LECTURE_LINK: 'https://w/t/abc', FORM_ID_apply: 'form-1' },
+    placeholders: { BOOKING_URL: 'https://liff.line.me/2-y?page=book', LECTURE_LINK: 'https://w/t/abc', FORM_ID_apply: 'form-1', BONUS1_URL: 'https://youtu.be/b1', BONUS2_URL: 'https://youtu.be/b2' },
   };
   const drip = buildStepPayloads(lecture.scenarios.drip, ctx);
   assert.equal(drip[0].conditionType, undefined);
@@ -106,6 +106,9 @@ test('講義設定: skipIfTag が tag_not_exists 条件になり、フォーム�
   assert.deepEqual(drip.map((s) => [s.offsetDays, s.deliveryTime]), [[0, '00:00'], [0, '21:00'], [1, '08:00'], [1, '20:00'], [2, '20:00']]);
   assert.ok(drip[0].messageContent.includes('https://w/t/abc'));
   assert.ok(drip[1].messageContent.includes('{{form_url:form-1}}'));
+  const bonus = buildStepPayloads(lecture.scenarios.bonus, ctx);
+  assert.equal(bonus[0].delayMinutes, 60);
+  assert.ok(bonus[0].messageContent.includes('https://youtu.be/b1') && bonus[0].messageContent.includes('https://youtu.be/b2'));
   const applied = buildStepPayloads(lecture.scenarios.applied, ctx);
   assert.equal(applied[1].delayMinutes, 1440);
   assert.equal(applied[1].conditionValue, 'tg-c');
@@ -147,7 +150,7 @@ test('講義設定 applyAll: タグ → フォーム → リンク → シナリ
   };
   const ctx = {
     api, config: lecture, assets: null,
-    env: { BOOKING_URL: 'https://liff.line.me/2-y?page=book', LECTURE_PAGE_URL: 'https://roots-lecture.pages.dev' },
+    env: { BOOKING_URL: 'https://liff.line.me/2-y?page=book', LECTURE_PAGE_URL: 'https://roots-lecture.pages.dev', BONUS1_URL: 'https://youtu.be/b1', BONUS2_URL: 'https://youtu.be/b2' },
     lineAccountId: 'acc2', withBooking: false, log: () => {},
   };
   const r1 = await applyAll(ctx);

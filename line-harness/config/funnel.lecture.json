@@ -190,6 +190,19 @@
         }
       ]
     },
+    "bonus": {
+      "name": "講義_特典エクササイズ動画",
+      "description": "友だち追加（講義動画の案内）の1時間後に、特典のエクササイズ動画2本を送る",
+      "triggerType": "friend_add",
+      "deliveryMode": "relative",
+      "steps": [
+        {
+          "type": "text",
+          "file": "bonus-01.txt",
+          "delayMinutes": 60
+        }
+      ]
+    },
     "applied": {
       "name": "講義_申込後フォロー",
       "description": "フォーム送信（タグ付与）直後の受付連絡。24時間後にまだ予約が確定していなければ予約ページを案内",

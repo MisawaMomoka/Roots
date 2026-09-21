@@ -15,6 +15,7 @@
 //   __LECTURE_PAGE_URL__   .env の LECTURE_PAGE_URL（トラッキングリンクの飛び先）
 //   __FORM_ID_<key>__      作成したフォームの ID（{{form_url:__FORM_ID_apply__}} のように使う）
 //   __LINE2_CHANNEL_ID__ / __THUMB_URL__ / __THUMB_ASPECT__   .env.line1 の値（LINE1 の誘導 Flex 用）
+//   __BONUS1_URL__ / __BONUS2_URL__   .env.lecture の特典動画 URL（YouTube 限定公開など）
 import {
   loadEnv, requireEnv, createApi, loadFunnelConfig, loadAssets, readMessageFile, parseArgs, ApiError,
   ROOT_DIR,
@@ -321,6 +322,8 @@ export async function applyAll({ api, config, assets, env = {}, lineAccountId, w
       LINE2_CHANNEL_ID: env.LINE2_CHANNEL_ID,
       THUMB_URL: env.THUMB_URL,
       THUMB_ASPECT: env.THUMB_ASPECT || '16:9',
+      BONUS1_URL: env.BONUS1_URL,
+      BONUS2_URL: env.BONUS2_URL,
     },
   };
   ctx.tagIds = await ensureTags(api, config.tags, log);
