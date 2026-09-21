@@ -1,15 +1,14 @@
 {
-  "$comment": "LINE1（理駆・既存）用。友だち追加の直後にサムネイル＋受け取りボタンを送り、LINE2（講義）へ誘導するだけ。apply.mjs --env=.env.line1 --config=config/funnel.line1.json",
+  "$comment": "LINE1（理駆・既存）用。友だち追加の直後にサムネイル＋受け取りボタンを送り、LINE2（講義）へ誘導するだけ。L Harness は即時ステップを 1 通目しか友だち追加の瞬間に送れない（2 通目以降は cron 待ちで遅れる）ので、あいさつ文（invite-01.txt）は LINE 側の「あいさつメッセージ」で送り、ここは Flex 1 通だけにする。apply.mjs --env=.env.line1 --config=config/funnel.line1.json",
   "messagesDir": "line1",
   "tags": [],
   "scenarios": {
     "invite": {
       "name": "講義_LINE2への誘導",
-      "description": "友だち追加直後。短い一言 → サムネイル付きの受け取りボタン（LINE2 の友だち追加リンク）",
+      "description": "友だち追加直後にサムネイル付きの受け取りボタン（LINE2 の友だち追加リンク）。あいさつ文は LINE公式アカウントマネージャーの「あいさつメッセージ」で送る（messages/line1/invite-01.txt を貼る）",
       "triggerType": "friend_add",
       "deliveryMode": "relative",
       "steps": [
-        { "type": "text", "file": "invite-01.txt", "delayMinutes": 0 },
         { "type": "flex", "file": "invite.flex.json", "delayMinutes": 0 }
       ]
     }

@@ -12,12 +12,8 @@
   "body": {
     "type": "box",
     "layout": "vertical",
-    "spacing": "md",
     "contents": [
-      { "type": "text", "text": "やせ習慣1Day講義", "weight": "bold", "size": "xl", "wrap": true },
-      { "type": "text", "text": "受け取りはこちら👇", "size": "md", "wrap": true },
-      { "type": "text", "text": "自分に合う食事と運動がわかる、無理なく続くダイエット講義。特典のエクササイズ動画2本付き。", "size": "sm", "wrap": true },
-      { "type": "text", "text": "ボタンを押すと講義専用のLINEが開きます。友だち追加すると、すぐに講義動画が届きます。", "size": "xs", "color": "#888888", "wrap": true }
+      { "type": "text", "text": "やせ習慣1Day講義", "weight": "bold", "size": "xl", "wrap": true }
     ]
   },
   "footer": {
