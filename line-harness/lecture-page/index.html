@@ -30,7 +30,7 @@
 
   "liffId": "2011653383-ta1zojXE",
   "apiUrl": "https://roots-line.re-tro.workers.dev",
-  "openedFormId": "0fd15466-6dc8-4c9b-b547-04a39762c7cc",
+  "openedRef": "lecture_opened",
 
   "bonusTitle": "特典動画",
   "bonus": []
@@ -161,18 +161,19 @@
     return undefined;
   }
 
-  // 「講義ページを開いた」を L Harness に記録（空のフォームを本人の LINE 情報付きで送る → タグが付く）。
+  // 「講義ページを開いた」を L Harness に記録。/api/liff/link に経路コード（openedRef）を送ると、
+  // その経路のタグ「講義_視聴ページを開いた」が無言で付く（メッセージは送られない）。
   // LINE アプリ内で開いたときだけ動く。失敗しても表示には影響させない。1 端末 1 回。
   (function markOpened() {
-    if (!window.liff || !cfg.liffId || !cfg.openedFormId || !cfg.apiUrl) return;
-    var key = 'roots_opened_' + cfg.openedFormId;
+    if (!window.liff || !cfg.liffId || !cfg.openedRef || !cfg.apiUrl) return;
+    var key = 'roots_opened_' + cfg.openedRef;
     try { if (localStorage.getItem(key)) return; } catch (e) {}
     liff.init({ liffId: cfg.liffId }).then(function () {
       if (!liff.isLoggedIn()) return;
       var d = null; try { d = liff.getDecodedIDToken(); } catch (e) {}
       if (!d || !d.exp || d.exp * 1000 < Date.now() + 60000) return; // 期限切れなら記録は諦める（ログインは強制しない）
-      return fetch(cfg.apiUrl.replace(/\/+$/, '') + '/api/forms/' + encodeURIComponent(cfg.openedFormId) + '/submit', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + liff.getIDToken() }, body: JSON.stringify({ data: {} })
+      return fetch(cfg.apiUrl.replace(/\/+$/, '') + '/api/liff/link', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: liff.getIDToken(), ref: cfg.openedRef })
       }).then(function (r) { if (r.ok) { try { localStorage.setItem(key, String(Date.now())); } catch (e) {} } });
     }).catch(function () {});
   })();

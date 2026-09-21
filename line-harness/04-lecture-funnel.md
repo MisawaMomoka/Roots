@@ -130,8 +130,9 @@ B の「誰が開いたか」は、配信文のリンクを L Harness のトラ�
 ### 「開いていない人にだけ 1 時間後」の仕組み
 
 - L Harness は 1 つのシナリオで「相対（○分後）」と「時刻指定」を混ぜられないので、シナリオを 2 つに分けている：`welcome`（相対：0 分・60 分）と `drip`（時刻指定：D1 08:00 以降）。どちらも友だち追加で始まる。
-- 「開いた」の記録は、講義ページ（`lecture-page/index.html`）が開かれた瞬間に **項目なしのフォーム**「講義_視聴ページを開いた（自動）」を本人の LINE 情報付きで送信し、タグ `講義_視聴ページを開いた` を付ける。60 分後のステップは `skipIfTag: watched` でこのタグがある人を飛ばす。
-- 設定手順：`apply:lecture` の出力 `formIds.opened` の ID を `index.html` の `openedFormId` に貼って配備する（空のままだと記録されず、全員に 60 分後のメッセージが届く）。
+- 「開いた」の記録は、講義ページ（`lecture-page/index.html`）が LINE 内で開かれた瞬間に `POST /api/liff/link` へ本人の ID トークンと経路コード `lecture_opened` を送る方式。この経路（entry route）にタグ `講義_視聴ページを開いた` を紐づけてあるので、**メッセージを送らずに**タグだけ付く。60 分後のステップは `skipIfTag: watched` でこのタグがある人を飛ばす。
+  - フォーム送信でタグを付ける方式は使わない：L Harness はフォーム送信のたびに必ず何か返信し、返信文が無いと「診断結果」というデモ用カードを自動で送ってしまう。
+- 設定手順：`node scripts/entry-routes.mjs --env=.env.lecture --config=config/funnel.lecture.json` で経路を作る（`index.html` の `openedRef` は `lecture_opened` 固定なので貼り付け不要）。
 - 注意：deliveryMode は作成後に変更できないため、既存の「講義_友だち追加ステップ」は時刻指定のまま残し、先頭 2 通を外した。
 
 ---

@@ -67,3 +67,10 @@ test('entry-routes: 集計は funnel の値で割合と追加→申込率を出�
   assert.equal(empty.rows[0].share, 0);
   assert.equal(empty.rows[0].applyRate, null);
 });
+
+test('entry-routes: LINE2 設定には「講義ページを開いた」記録用の経路があり watched タグに対応', () => {
+  const c = loadFunnelConfig('config/funnel.lecture.json');
+  assert.deepEqual(c.entryRoutes.map((r) => [r.refCode, r.tag]), [['lecture_opened', 'watched']]);
+  assert.ok(c.tags.some((t) => t.key === 'watched'));
+});
+

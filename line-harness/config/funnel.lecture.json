@@ -2,15 +2,6 @@
   "$comment": "LINE2（リクさん・講義 → 個別相談会）の定義。apply.mjs --config=config/funnel.lecture.json で反映。messages は config/messages/lecture/ を参照。",
   "messagesDir": "lecture",
   "autoApprove": true,
-  "thanksMaxAgeMinutes": 180,
-  "prevDay": {
-    "time": "19:00",
-    "cutoffTime": "22:00"
-  },
-  "sameDay": {
-    "minutesBefore": 120
-  },
-  "lookaheadDays": 60,
   "tags": [
     {
       "key": "watched",
@@ -144,16 +135,26 @@
       "onSubmitTag": "applied",
       "onSubmitMessageFile": "apply-thanks.txt",
       "saveToMetadata": true
-    },
-    "opened": {
-      "$comment": "講義ページ（index.html）が開かれた瞬間に自動送信される『空のフォーム』。送信でタグ 講義_視聴ページを開いた が付き、未視聴フォローの skipIfTag に使う。apply 後に出る formIds.opened を index.html の openedFormId に貼る",
-      "name": "講義_視聴ページを開いた（自動）",
-      "description": "講義動画ページを開いた記録用（お客さまには見えない）",
-      "fields": [],
-      "onSubmitTag": "watched",
-      "saveToMetadata": false
     }
   },
+  "$entryRoutesComment": "「講義ページを開いた」の記録用。index.html が LINE 内で開かれたとき /api/liff/link に ref=lecture_opened を送ると、この経路のタグ（watched）が無言で付く（フォーム送信だと L Harness が『診断結果』カードを自動返信してしまうため使わない）。反映: node scripts/entry-routes.mjs --env=.env.lecture --config=config/funnel.lecture.json",
+  "entryRoutes": [
+    {
+      "key": "opened",
+      "refCode": "lecture_opened",
+      "name": "講義ページを開いた（記録用・配布しない）",
+      "tag": "watched"
+    }
+  ],
+  "thanksMaxAgeMinutes": 180,
+  "prevDay": {
+    "time": "19:00",
+    "cutoffTime": "22:00"
+  },
+  "sameDay": {
+    "minutesBefore": 120
+  },
+  "lookaheadDays": 60,
   "scenarios": {
     "welcome": {
       "name": "講義_友だち追加直後（相対）",

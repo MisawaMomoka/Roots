@@ -126,6 +126,6 @@ L Harness の最短受付時間は 60 分固定で管理画面からは変えら
 
 ## 「講義ページを開いた」の記録（index.html）
 
-`<script id="config">` の `openedFormId` に、`apply:lecture` の出力 `formIds.opened` の ID を貼る。LINE アプリ内で開かれたとき、本人の LINE 情報付きで空フォームを送信してタグ `講義_視聴ページを開いた` を付ける（1 端末 1 回）。
+`<script id="config">` の `openedRef`（`lecture_opened`）。LINE アプリ内で開かれたとき、本人の ID トークンと一緒に `/api/liff/link` へ送り、経路 `lecture_opened` のタグ `講義_視聴ページを開いた` を無言で付ける（1 端末 1 回）。
+経路は `node scripts/entry-routes.mjs --env=.env.lecture --config=config/funnel.lecture.json` で作る。フォーム送信方式は「診断結果」カードが自動返信されるため使わない。
 このタグがある人には、友だち追加 60 分後の「見どころ」メッセージを送らない。
-

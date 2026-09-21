@@ -111,9 +111,9 @@ test('講義設定: skipIfTag が tag_not_exists 条件になり、フォーム�
   // 翌日以降（時刻指定）: 教育・締切・最終日。申込済みなら送らない
   const drip = buildStepPayloads(lecture.scenarios.drip, ctx);
   assert.deepEqual(drip.map((s) => [s.offsetDays, s.deliveryTime, s.conditionValue]), [[1, '08:00', 'tg-a'], [1, '20:00', 'tg-a'], [2, '20:00', 'tg-a']]);
-  // 「開いた」記録用フォームは項目なし・タグ watched
-  assert.deepEqual(lecture.forms.opened.fields, []);
-  assert.equal(lecture.forms.opened.onSubmitTag, 'watched');
+  // 「開いた」記録は経路（entry route）で無言のタグ付け。フォームだと『診断結果』カードが自動返信されるので使わない
+  assert.equal(lecture.forms.opened, undefined);
+  assert.deepEqual(lecture.entryRoutes.map((r) => [r.refCode, r.tag]), [['lecture_opened', 'watched']]);
   const bonus = buildStepPayloads(lecture.scenarios.bonus, ctx);
   assert.equal(bonus[0].delayMinutes, 60);
   assert.ok(bonus[0].messageContent.includes('https://youtu.be/b1') && bonus[0].messageContent.includes('https://youtu.be/b2'));
@@ -174,14 +174,12 @@ test('講義設定 applyAll: タグ → フォーム → リンク → シナリ
   assert.ok(state.steps[welcome.id][0].messageContent.includes("https://roots-lecture.pages.dev?src={{ref}}"));
   assert.ok(state.steps[welcome.id][1].messageContent.includes(`{{form_url:${state.forms[0].id}}}`));
   assert.equal(state.steps[welcome.id][1].conditionValue, r1.tagIds.watched);
-  const opened = state.forms.find((f) => f.name === '講義_視聴ページを開いた（自動）');
-  assert.equal(opened.onSubmitTagId, r1.tagIds.watched);
-  assert.equal(r1.formIds.opened, opened.id);
+  assert.equal(state.forms.length, 1);
 
   const before = writes.length;
   await applyAll(ctx);
-  // 2回目: フォームは内容比較をせず PUT で同期する（2件）。それ以外の書き込みは無い
-  assert.deepEqual(writes.slice(before), ['PUT /api/forms/' + state.forms[0].id, 'PUT /api/forms/' + state.forms[1].id]);
+  // 2回目: フォームは内容比較をせず PUT で同期する（1件）。それ以外の書き込みは無い
+  assert.deepEqual(writes.slice(before), ['PUT /api/forms/' + state.forms[0].id]);
 });
 
 test('ensureBooking: 担当者ごとの受付時間があればそれを使い、無ければ共通設定を使う', async () => {
