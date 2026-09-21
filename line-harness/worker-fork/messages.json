@@ -5,5 +5,5 @@
   "builtinReminders": false,
   "$builtinRemindersComment": "false = L Harness 標準の 24 時間前／2 時間前リマインドを止める（こちらの前日19時・当日2時間前のシナリオで代替）",
   "calendarTitleFromNote": true,
-  "$calendarTitleComment": "true = 申込メモの 1 行目が「件名: …」ならそれをカレンダーの予定タイトルにする（申込ページが『姓 名さん：流入元｜メニュー名』を書く）"
+  "$calendarTitleComment": "true = 申込メモの 1 行目が「件名: …」ならそれをカレンダーの予定タイトルにする（申込ページが『姓 名さん｜メニュー名』を書く）"
 }

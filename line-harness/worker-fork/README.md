@@ -10,7 +10,7 @@ L Harness 本体（Cloudflare Worker `roots-line`）は、予約の「受付し�
 | `requested` | 文言 or `""` | 申込直後の「予約リクエストを受け付けました」。`""` なら送らない |
 | `approved` | 文言 or `""` | 承認時の「予約が確定しました」。`""` なら送らない |
 | `builtinReminders` | `false` | 標準の 24 時間前／2 時間前リマインドを止める（こちらのシナリオで代替） |
-| `calendarTitleFromNote` | `true` | 申込メモの 1 行目が `件名: …` ならカレンダーの予定タイトルにする（申込ページが `姓 名さん：流入元｜メニュー名` を書く） |
+| `calendarTitleFromNote` | `true` | 申込メモの 1 行目が `件名: …` ならカレンダーの予定タイトルにする（申込ページが `姓 名さん｜メニュー名` を書く） |
 
 文言の差し込み：`{menu}` `{staff}` `{datetime}`。改行は `\n`。
 
