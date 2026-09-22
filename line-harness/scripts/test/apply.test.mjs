@@ -107,7 +107,8 @@ test('講義設定: skipIfTag が tag_not_exists 条件になり、フォーム�
   assert.equal(welcome[1].conditionValue, 'tg-w');
   // 講義リンクは流入元を引き継ぐ直リンク（?src={{ref}}）。配信時に L Harness が {{ref}} を展開する
   assert.ok(welcome[0].messageContent.includes('https://liff.line.me/2-z?src={{ref}}'));
-  assert.ok(welcome[1].messageContent.includes('{{form_url:form-1}}'));
+  // 見どころ（管理画面で直した文面）は講義リンクだけ。申込フォームの案内は講義ページ側にある
+  assert.ok(welcome[1].messageContent.includes('https://liff.line.me/2-z?src={{ref}}'));
   // 翌日以降（時刻指定）: 教育・締切・最終日。申込済みなら送らない
   const drip = buildStepPayloads(lecture.scenarios.drip, ctx);
   assert.deepEqual(drip.map((s) => [s.offsetDays, s.deliveryTime, s.conditionValue]), [[1, '08:00', 'tg-a'], [1, '20:00', 'tg-a'], [2, '20:00', 'tg-a']]);
@@ -116,7 +117,8 @@ test('講義設定: skipIfTag が tag_not_exists 条件になり、フォーム�
   assert.deepEqual(lecture.entryRoutes.map((r) => [r.refCode, r.tag]), [['lecture_opened', 'watched']]);
   const bonus = buildStepPayloads(lecture.scenarios.bonus, ctx);
   assert.equal(bonus[0].delayMinutes, 60);
-  assert.ok(bonus[0].messageContent.includes('https://youtu.be/b1') && bonus[0].messageContent.includes('https://youtu.be/b2'));
+  // 特典動画の URL は管理画面の文面をそのまま取り込んだ（.env の BONUS1_URL / BONUS2_URL は不要）
+  assert.ok(bonus[0].messageContent.includes('▼エクササイズ動画①') && bonus[0].messageContent.includes('youtube.com/shorts/'));
   const applied = buildStepPayloads(lecture.scenarios.applied, ctx);
   assert.equal(applied[1].delayMinutes, 1440);
   assert.equal(applied[1].conditionValue, 'tg-c');
@@ -172,7 +174,7 @@ test('講義設定 applyAll: タグ → フォーム → リンク → シナリ
   const welcome = state.scenarios.find((s) => s.name === '講義_友だち追加直後（相対）');
   assert.equal(welcome.deliveryMode, 'relative');
   assert.ok(state.steps[welcome.id][0].messageContent.includes("https://roots-lecture.pages.dev?src={{ref}}"));
-  assert.ok(state.steps[welcome.id][1].messageContent.includes(`{{form_url:${state.forms[0].id}}}`));
+  assert.ok(state.steps[welcome.id][1].messageContent.includes('https://roots-lecture.pages.dev?src={{ref}}'));
   assert.equal(state.steps[welcome.id][1].conditionValue, r1.tagIds.watched);
   assert.equal(state.forms.length, 1);
 
