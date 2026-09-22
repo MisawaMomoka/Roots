@@ -1,0 +1,33 @@
+# 診断（読み取りだけ）: シナリオの設定・登録者・進行状況をログに出す。何も書き換えない。
+name: line-harness diag (lecture)
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: 詳細を見るシナリオ名（空なら一覧だけ）
+        default: ''
+        required: false
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: line-harness
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: 診断
+        env:
+          LINE_HARNESS_API_URL: ${{ secrets.LINE_HARNESS_API_URL }}
+          LINE_HARNESS_API_KEY: ${{ secrets.LINE_HARNESS_API_KEY }}
+          LINE_HARNESS_ACCOUNT_ID: ${{ secrets.LINE_HARNESS_ACCOUNT_ID }}
+          SCENARIO: ${{ inputs.scenario }}
+        run: |
+          set -euo pipefail
+          if [ -n "$SCENARIO" ]; then EXTRA="--scenario=$SCENARIO"; else EXTRA=; fi
+          node scripts/diag-scenario.mjs $EXTRA
