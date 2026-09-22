@@ -221,7 +221,7 @@
     },
     "applied": {
       "name": "講義_申込後フォロー",
-      "description": "フォーム送信（タグ付与）直後の受付連絡。24時間後にまだ予約が確定していなければ予約ページを案内",
+      "description": "フォーム送信（タグ付与）直後の受付連絡の 1 通だけ（24 時間後の念押しは管理画面で意図して削除済み）",
       "triggerType": "tag_added",
       "triggerTag": "applied",
       "deliveryMode": "relative",
@@ -230,12 +230,6 @@
           "type": "text",
           "file": "applied-01-booking.txt",
           "delayMinutes": 0
-        },
-        {
-          "type": "text",
-          "file": "applied-02-reminder.txt",
-          "delayMinutes": 1440,
-          "skipIfTag": "confirmed"
         }
       ]
     },

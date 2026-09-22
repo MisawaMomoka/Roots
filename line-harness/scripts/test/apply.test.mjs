@@ -119,10 +119,11 @@ test('講義設定: skipIfTag が tag_not_exists 条件になり、フォーム�
   assert.equal(bonus[0].delayMinutes, 60);
   // 特典動画の URL は管理画面の文面をそのまま取り込んだ（.env の BONUS1_URL / BONUS2_URL は不要）
   assert.ok(bonus[0].messageContent.includes('▼エクササイズ動画①') && bonus[0].messageContent.includes('youtube.com/shorts/'));
+  // 申込後フォローは受付連絡の 1 通だけ（24 時間後の念押しは管理画面で意図して削除済み）
   const applied = buildStepPayloads(lecture.scenarios.applied, ctx);
-  assert.equal(applied[1].delayMinutes, 1440);
-  assert.equal(applied[1].conditionValue, 'tg-c');
-  assert.ok(applied[1].messageContent.includes('https://liff.line.me/2-y?page=book'));
+  assert.equal(applied.length, 1);
+  assert.equal(applied[0].delayMinutes, 0);
+  assert.ok(applied[0].messageContent.includes('https://liff.line.me/2-y?page=book'));
   for (const scenario of Object.values(lecture.scenarios)) {
     for (const step of buildStepPayloads(scenario, ctx)) {
       assert.ok(!step.messageContent.includes('__'), `${scenario.name} #${step.stepOrder}: 未置換`);
