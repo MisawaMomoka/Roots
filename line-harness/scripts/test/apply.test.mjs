@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildStepContent, buildStepPayloads, applyAll, fillPlaceholders } from '../apply.mjs';
+import { buildStepContent, buildStepPayloads, applyAll, fillPlaceholders, ensureScenario } from '../apply.mjs';
 import { loadFunnelConfig } from '../lib.mjs';
 
 const config = loadFunnelConfig();
@@ -180,6 +180,32 @@ test('講義設定 applyAll: タグ → フォーム → リンク → シナリ
   await applyAll(ctx);
   // 2回目: フォームは内容比較をせず PUT で同期する（1件）。それ以外の書き込みは無い
   assert.deepEqual(writes.slice(before), ['PUT /api/forms/' + state.forms[0].id]);
+});
+
+test('ensureScenario: renamedFrom があれば旧名のシナリオを名前だけ付け替え、ステップは作り直さない', async () => {
+  const drip = lecture.scenarios.drip;
+  assert.equal(drip.name, '講義_閲覧後未申込フォロー');
+  assert.equal(drip.renamedFrom, '講義_友だち追加ステップ');
+  const ctx = {
+    lineAccountId: 'acc2', assets: null, messagesDir: lecture.messagesDir,
+    tagIds: { watched: 'tg-w', applied: 'tg-a', confirmed: 'tg-c' },
+    placeholders: { BOOKING_URL: 'https://liff.line.me/2-y?page=book', LECTURE_LINK_SRC: 'https://liff.line.me/2-z?src={{ref}}', FORM_ID_apply: 'form-1' },
+  };
+  const desired = buildStepPayloads(drip, ctx);
+  const existingSteps = desired.map((d, i) => ({ id: `st-${i + 1}`, ...d }));
+  const writes = [];
+  const api = async (method, path, { body } = {}) => {
+    if (method !== 'GET') writes.push(`${method} ${path} ${JSON.stringify(body)}`);
+    if (method === 'GET' && path === '/api/scenarios') {
+      return { data: [{ id: 'sc-old', name: '講義_友だち追加ステップ', triggerType: 'friend_add', deliveryMode: 'absolute_time', isActive: true }] };
+    }
+    if (method === 'PUT' && path === '/api/scenarios/sc-old') return { data: {} };
+    if (method === 'GET' && path === '/api/scenarios/sc-old') return { data: { id: 'sc-old', steps: existingSteps } };
+    throw new Error(`mock にないAPI: ${method} ${path}`);
+  };
+  const r = await ensureScenario(api, 'drip', drip, ctx, () => {});
+  assert.equal(r.id, 'sc-old');
+  assert.deepEqual(writes, ['PUT /api/scenarios/sc-old {"name":"講義_閲覧後未申込フォロー"}']);
 });
 
 test('ensureBooking: 担当者ごとの受付時間があればそれを使い、無ければ共通設定を使う', async () => {

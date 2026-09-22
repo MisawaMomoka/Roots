@@ -176,8 +176,10 @@
       ]
     },
     "drip": {
-      "name": "講義_友だち追加ステップ",
-      "description": "翌日以降の教育・締切メッセージ（時刻指定）。あいさつと未視聴フォローは「講義_友だち追加直後（相対）」側",
+      "name": "講義_閲覧後未申込フォロー",
+      "renamedFrom": "講義_友だち追加ステップ",
+      "$renamedFromComment": "管理画面に旧名のシナリオがあれば apply.mjs が名前だけ付け替える（作り直さない）。全ステップの skipIfTag: applied = 配信時点で「講義_相談会申込」タグが無い人にだけ送る（tag_not_exists）",
+      "description": "翌日以降の教育・締切メッセージ（時刻指定）。申込済み（講義_相談会申込タグあり）の人には送らない。あいさつと未視聴フォローは「講義_友だち追加直後（相対）」側",
       "triggerType": "friend_add",
       "deliveryMode": "absolute_time",
       "steps": [

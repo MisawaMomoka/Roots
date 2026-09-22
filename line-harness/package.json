@@ -16,6 +16,7 @@
     "apply:lecture:booking": "node scripts/apply.mjs --env=.env.lecture --config=config/funnel.lecture.json --booking",
     "sync:lecture": "node scripts/sync-bookings.mjs --env=.env.lecture --config=config/funnel.lecture.json",
     "google-link:lecture": "node scripts/google-link.mjs --env=.env.lecture",
+    "condition:lecture": "node scripts/scenario-condition.mjs --env=.env.lecture --scenario=講義_閲覧後未申込フォロー --tag=講義_相談会申込",
     "routes:line1": "node scripts/entry-routes.mjs --env=.env.line1 --config=config/funnel.line1.json",
     "routes:line1:stats": "node scripts/entry-routes.mjs --env=.env.line1 --config=config/funnel.line1.json --stats"
   }

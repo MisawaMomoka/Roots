@@ -187,6 +187,15 @@ export async function ensureScenario(api, key, scenario, ctx, log) {
   const { lineAccountId } = ctx;
   const list = (await api('GET', '/api/scenarios')).data;
   let found = list.find((s) => s.name === scenario.name);
+  if (!found && scenario.renamedFrom) {
+    // 設定で name を変えたとき、管理画面側の旧名シナリオを名前だけ付け替える（作り直すと登録済みの人の進行が消えるため）
+    const old = list.find((s) => s.name === scenario.renamedFrom);
+    if (old) {
+      await api('PUT', `/api/scenarios/${old.id}`, { body: { name: scenario.name } });
+      log(`scenario ~ ${scenario.renamedFrom} → ${scenario.name} (名前を変更)`);
+      found = { ...old, name: scenario.name };
+    }
+  }
   const desiredSteps = buildStepPayloads(scenario, ctx);
   const triggerTagId = scenario.triggerTag ? ctx.tagIds[scenario.triggerTag] : undefined;
   if (scenario.triggerType === 'tag_added' && !triggerTagId) {

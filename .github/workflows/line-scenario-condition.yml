@@ -1,0 +1,49 @@
+# 指定したシナリオの全ステップに「タグが無い人にだけ送る」条件（tag_not_exists）を入れて検証する。
+# 手動実行（Actions タブ → Run workflow）のみ。dry_run=true なら差分表示だけで書き込まない。
+# 仕組み・検証内容は line-harness/04-lecture-funnel.md
+name: line-harness scenario condition (lecture)
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: シナリオ名（完全一致）
+        default: 講義_閲覧後未申込フォロー
+        required: true
+      tag:
+        description: このタグが無い人にだけ送る
+        default: 講義_相談会申込
+        required: true
+      dry_run:
+        description: 差分表示だけ（書き込まない）
+        type: boolean
+        default: true
+
+concurrency:
+  group: line-scenario-condition
+  cancel-in-progress: false
+
+jobs:
+  condition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: line-harness
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: 条件を設定して検証
+        env:
+          LINE_HARNESS_API_URL: ${{ secrets.LINE_HARNESS_API_URL }}
+          LINE_HARNESS_API_KEY: ${{ secrets.LINE_HARNESS_API_KEY }}
+          LINE_HARNESS_ACCOUNT_ID: ${{ secrets.LINE_HARNESS_ACCOUNT_ID }}
+          SCENARIO: ${{ inputs.scenario }}
+          TAG: ${{ inputs.tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [ "$DRY_RUN" = "true" ]; then EXTRA=--dry-run; else EXTRA=; fi
+          node scripts/scenario-condition.mjs --scenario="$SCENARIO" --tag="$TAG" $EXTRA
