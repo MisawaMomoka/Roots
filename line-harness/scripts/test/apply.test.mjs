@@ -123,7 +123,7 @@ test('講義設定: skipIfTag が tag_not_exists 条件になり、フォーム�
   const applied = buildStepPayloads(lecture.scenarios.applied, ctx);
   assert.equal(applied.length, 1);
   assert.equal(applied[0].delayMinutes, 0);
-  assert.ok(applied[0].messageContent.includes('https://liff.line.me/2-y?page=book'));
+  assert.ok(applied[0].messageContent.includes('お申し込みありがとうございます'));
   for (const scenario of Object.values(lecture.scenarios)) {
     for (const step of buildStepPayloads(scenario, ctx)) {
       assert.ok(!step.messageContent.includes('__'), `${scenario.name} #${step.stepOrder}: 未置換`);
