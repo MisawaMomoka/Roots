@@ -1,0 +1,65 @@
+# 管理画面で直接直した文面をリポジトリの config/messages/lecture/*.txt に取り込む（apply の逆方向）。
+# 手動実行（Actions タブ → Run workflow）のみ。commit=false なら差分をログに出すだけ。
+# 手順は line-harness/04-lecture-funnel.md
+name: line-harness pull messages (lecture)
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: 取り込むシナリオ（設定の key か名前。カンマ区切り。空なら全部）
+        default: 講義_閲覧後未申込フォロー
+        required: false
+      commit:
+        description: 差分をこのブランチにコミットして push する
+        type: boolean
+        default: false
+
+concurrency:
+  group: line-pull-messages
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: line-harness
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: 管理画面の文面を取り込む
+        env:
+          LINE_HARNESS_API_URL: ${{ secrets.LINE_HARNESS_API_URL }}
+          LINE_HARNESS_API_KEY: ${{ secrets.LINE_HARNESS_API_KEY }}
+          LINE_HARNESS_ACCOUNT_ID: ${{ secrets.LINE_HARNESS_ACCOUNT_ID }}
+          # 文面中の URL をプレースホルダーに戻すための値（.env.lecture と同じ。公開 LIFF URL なので Secret ではない）
+          BOOKING_URL: https://liff.line.me/2011653383-oiECpx5P?page=book
+          LECTURE_PAGE_URL: https://liff.line.me/2011653383-ta1zojXE
+          BONUS1_URL: ${{ secrets.BONUS1_URL }}
+          BONUS2_URL: ${{ secrets.BONUS2_URL }}
+          SCENARIO: ${{ inputs.scenario }}
+        run: |
+          set -euo pipefail
+          if [ -n "$SCENARIO" ]; then EXTRA="--scenario=$SCENARIO"; else EXTRA=; fi
+          node scripts/pull-messages.mjs --config=config/funnel.lecture.json --write --json $EXTRA
+      - name: 差分
+        run: |
+          git status --short
+          git --no-pager diff
+      - name: コミットして push
+        if: ${{ inputs.commit }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then echo "差分なし"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add config/messages
+          git commit -m "文面: 管理画面で直した内容をファイルに取り込み（${{ inputs.scenario || '全シナリオ' }}）"
+          git push

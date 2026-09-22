@@ -116,6 +116,7 @@ B の「誰が開いたか」は、配信文のリンクを L Harness のトラ�
 
 - 設定ファイルでは各ステップの `skipIfTag: "applied"`。`apply:lecture` で反映される。
 - 管理画面側だけ直したいとき（設定を触らずに条件だけ入れて検証する）: `npm run condition:lecture`（= `node scripts/scenario-condition.mjs --env=.env.lecture --scenario=講義_閲覧後未申込フォロー --tag=講義_相談会申込`）。指定したシナリオの全ステップに条件を入れ、他のシナリオには触らない。終わったら (1) 全ステップの条件、(2) タグあり／なしの人数、(3) タグ付きの友だちが全ステップで配信対象外になること、を API で検証して失敗なら非 0 で止まる。`--dry-run` で差分だけ確認できる。
+- **管理画面で文面を直接直したとき**は、次の `apply:lecture` で上書きされる前にファイルへ取り込む: `npm run pull:lecture`（差分表示）→ `npm run pull:lecture:write`（書き換え）。実際の URL やフォーム ID は `__LECTURE_LINK_SRC__` `{{form_url:__FORM_ID_apply__}}` などに戻る。PC を使わない場合は Actions タブ →「line-harness pull messages (lecture)」→ Run workflow（`commit` を ON にするとブランチに直接コミットされる）。対象は text ステップだけで、Flex／動画ステップは取り込まない。
 - シナリオ名を変えたときは設定の `renamedFrom` に旧名を書く。`apply.mjs` が旧名のシナリオを見つけて名前だけ付け替える（作り直すと登録済みの人の進行が消えるため）。
 
 ---

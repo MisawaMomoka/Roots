@@ -322,24 +322,29 @@ export async function ensureBooking(api, booking, tagIds, accountId, log) {
   }
 }
 
+/** .env 由来のプレースホルダー（フォーム ID・トラッキングリンクは apply の途中で足される） */
+export function envPlaceholders(env = {}) {
+  return {
+    API_URL: env.LINE_HARNESS_API_URL ? env.LINE_HARNESS_API_URL.replace(/\/+$/, '') : undefined,
+    BOOKING_URL: env.BOOKING_URL,
+    LECTURE_PAGE_URL: env.LECTURE_PAGE_URL,
+    // 講義ページの直リンクに流入元（LINE1 の ref）を付けて渡す。申込ページがカレンダーのメモに「流入元」を書くために使う
+    LECTURE_LINK_SRC: env.LECTURE_PAGE_URL ? `${env.LECTURE_PAGE_URL}?src={{ref}}` : undefined,
+    LINE2_CHANNEL_ID: env.LINE2_CHANNEL_ID,
+    THUMB_URL: env.THUMB_URL,
+    THUMB_ASPECT: env.THUMB_ASPECT || '16:9',
+    BONUS1_URL: env.BONUS1_URL,
+    BONUS2_URL: env.BONUS2_URL,
+  };
+}
+
 export async function applyAll({ api, config, assets, env = {}, lineAccountId, withBooking, log }) {
   const ctx = {
     assets,
     lineAccountId,
     messagesDir: config.messagesDir ?? null,
     tagIds: {},
-    placeholders: {
-      API_URL: env.LINE_HARNESS_API_URL ? env.LINE_HARNESS_API_URL.replace(/\/+$/, '') : undefined,
-      BOOKING_URL: env.BOOKING_URL,
-      LECTURE_PAGE_URL: env.LECTURE_PAGE_URL,
-      // 講義ページの直リンクに流入元（LINE1 の ref）を付けて渡す。申込ページがカレンダーのメモに「流入元」を書くために使う
-      LECTURE_LINK_SRC: env.LECTURE_PAGE_URL ? `${env.LECTURE_PAGE_URL}?src={{ref}}` : undefined,
-      LINE2_CHANNEL_ID: env.LINE2_CHANNEL_ID,
-      THUMB_URL: env.THUMB_URL,
-      THUMB_ASPECT: env.THUMB_ASPECT || '16:9',
-      BONUS1_URL: env.BONUS1_URL,
-      BONUS2_URL: env.BONUS2_URL,
-    },
+    placeholders: envPlaceholders(env),
   };
   ctx.tagIds = await ensureTags(api, config.tags, log);
 
