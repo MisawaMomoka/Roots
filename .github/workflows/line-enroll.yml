@@ -1,0 +1,43 @@
+# タグ付与時トリガーのシナリオに、作成前からタグを持っていた人を手動登録する。
+# 手動実行のみ。dry_run=true なら対象を表示するだけ。
+name: line-harness enroll tagged (lecture)
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: シナリオ名（完全一致・タグ付与時トリガー）
+        default: 講義_閲覧後未申込フォロー
+        required: true
+      dry_run:
+        description: 対象を表示するだけ（登録しない）
+        type: boolean
+        default: true
+
+concurrency:
+  group: line-enroll
+  cancel-in-progress: false
+
+jobs:
+  enroll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: line-harness
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: 登録
+        env:
+          LINE_HARNESS_API_URL: ${{ secrets.LINE_HARNESS_API_URL }}
+          LINE_HARNESS_API_KEY: ${{ secrets.LINE_HARNESS_API_KEY }}
+          LINE_HARNESS_ACCOUNT_ID: ${{ secrets.LINE_HARNESS_ACCOUNT_ID }}
+          SCENARIO: ${{ inputs.scenario }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [ "$DRY_RUN" = "true" ]; then EXTRA=--dry-run; else EXTRA=; fi
+          node scripts/enroll-tagged.mjs --scenario="$SCENARIO" $EXTRA
